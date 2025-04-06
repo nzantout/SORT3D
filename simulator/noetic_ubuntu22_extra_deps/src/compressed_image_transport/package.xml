@@ -1,0 +1,34 @@
+<package format="2">
+  <name>compressed_image_transport</name>
+  <version>1.15.0</version>
+  <description>
+    Compressed_image_transport provides a plugin to image_transport for transparently sending images
+    encoded as JPEG or PNG.
+  </description>
+  <maintainer email="kenjibrameld@gmail.com">Kenji Brameld</maintainer>
+  <license>BSD</license>
+
+  <url type="website">http://www.ros.org/wiki/image_transport_plugins</url>
+  <author>Patrick Mihelich</author>
+  <author>Julius Kammerl</author>
+  <author>David Gossow</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>image_transport</depend>
+
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>libturbojpeg</build_depend>
+
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend>libturbojpeg</exec_depend>
+
+  <test_depend>rostest</test_depend>
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+    <image_transport plugin="${prefix}/compressed_plugins.xml" />
+  </export>
+</package>

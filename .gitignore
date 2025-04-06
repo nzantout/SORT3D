@@ -1,0 +1,16 @@
+build/
+devel/
+log/
+install/
+mesh/
+**/.vscode/**
+**/__pycache__/**
+.catkin_workspace
+*.pkl
+*.pth
+*.bag
+*.zip
+semantic_mapping/
+cropped_scenes/
+logs/
+sr3d.csv

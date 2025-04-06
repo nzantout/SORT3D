@@ -1,0 +1,18 @@
+<launch>
+
+  <arg name="environment_name" default="a room"/>
+  <arg name="ll_model" default="mistral"/>
+  <arg name="planner_run_mode" default="use_tools"/>
+  <arg name="object_query_type" default="llm"/>
+
+  <arg name="clip_model" default="clip"/>
+  <arg name="process_terrain_map_into_freespace" default="False"/>
+  <arg name="simulator" default="wheelchair_unity"/>
+
+  <node name="language_planner_node" pkg="language_planner" type="language_planner_node.py" output="screen"
+    args="--environment_name $(arg environment_name) --model $(arg ll_model) --run_mode $(arg planner_run_mode) --object_query_type $(arg object_query_type)" />
+
+  <node name="captioning_node" pkg="captioner" type="captioning_node.py" output="screen" 
+    args="--model_type $(arg clip_model) --process_terrain_map_into_freespace $(arg process_terrain_map_into_freespace) --simulator $(arg simulator)" />
+
+</launch>
