@@ -444,7 +444,7 @@ Enter a query to publish:
 
 You may then type a natural language navigation statement, like "go near the red chair", and watch the system navigate:
 
-https://github.com/user-attachments/assets/493a8387-6e71-4cd6-8201-fbd3264c6575
+https://github.com/user-attachments/assets/a4b88e80-4ae6-4ce1-9215-1cd449275b7f
 
 ### Simulation with Semantic Mapping Module
 
