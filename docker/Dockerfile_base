@@ -1,0 +1,75 @@
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+
+ENV ROS_DISTRO humble
+
+########ROS########
+# setup timezone
+RUN echo 'Etc/UTC' > /etc/timezone && \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    apt-get update && \
+    apt-get install -q -y --no-install-recommends tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+# install packages
+RUN apt-get update && apt-get install -q -y --no-install-recommends \
+    dirmngr \
+    gnupg2 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# setup keys
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+# setup sources.list
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu jammy main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-humble-desktop \
+    && rm -rf /var/lib/apt/lists/*
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-vcstools \
+    python-is-python3 \
+    libusb-dev \
+    ros-humble-perception-pcl \
+    ros-humble-sensor-msgs-py \
+    ros-humble-tf-transformations \
+    ros-humble-joy python3-colcon-common-extensions \
+    unzip \
+    pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# pip dependencies
+RUN pip install transforms3d pyyaml
+
+# Add a user
+RUN useradd -m docker
+
+# Add the user to sudoers
+RUN usermod -aG sudo docker
+
+# Optinal: use sudo without a password prompt
+RUN echo 'docker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Switch to the user
+USER docker
+
+# Source ROS
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+CMD ["bash"]

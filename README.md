@@ -1,2 +1,465 @@
-# SORT3D: Spatial Object-centric Reasoning Toolbox for Zero-Shot 3D Grounding Using Large Language Models
-Code coming soon...
+<h1 align="center">SORT3D: Spatial Object-centric Reasoning Toolbox for Zero-Shot 3D Grounding Using Large Language Models</h1>
+
+<div align="center" margin-bottom="1em">
+<a href="https://nzantout.github.io">Nader Zantout<sup>✶</sup></a>,
+<a href="https://HaochenZ11.github.io">Haochen Zhang<sup>✶</sup></a>,
+<a href="https://sites.google.com/view/pujith-kachana/">Pujith Kachana</a>,
+<a href="https://www.jinkaiq.com/">Jinkai Qiu</a>,
+<a href="https://gfchen01.cc/">Guofei Chen</a>,
+<a href="https://frc.ri.cmu.edu/~zhangji/">Ji Zhang</a>,
+<a href="http://www.wangwenshan.com/">Wenshan Wang</a>
+<br>
+<sup>* </sup>Equal contribution<br>
+</div>
+&nbsp;
+<div align="center" margin-bottom="1em">
+    <a href="" target="_blank">
+    <img src="https://img.shields.io/badge/Paper-arXiv-deepgreen" alt="Paper arXiv"></a>
+    <a href="" target="_blank">
+    <img src="https://img.shields.io/badge/Video-YouTube-9966ff" alt="Video"></a>
+</div>
+
+&nbsp;
+
+We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigation system employing a spatial reasoning toolbox and state of the art 2D VLMs for perception.
+
+<div style="text-align: center;"><img src="media/diagram.png" alt="SORT3D Diagram" width="99%"></div>
+
+https://github.com/user-attachments/assets/df61c12d-6815-4c06-910e-7b55e0b999c6
+
+This repository is set up to run both grounding evaluation on the [ReferIt3D](https://referit3d.github.io) and [VLA-3D](https://github.com/HaochenZ11/VLA-3D) benchmarks and online navigation, on both real robots and provided simulated environments. We also provide a [dataset](#dataset) of Scannet object crops and captions generated using our pipeline.
+
+## Updates
+
+- [2025-03] We release SORT3D for offline grounding and online object-centric navigation. 
+
+-----
+
+### Table of Contents
+
+
+- [Repository Structure](#repository-structure)
+- [Data](#data)
+  - [Dataset For SORT3D-Bench](#dataset-for-sort3d-bench)
+  - [ROS Bag Files for SORT3D-Nav](#ros-bag-files-for-sort3d-nav)
+- [System Requirements](#system-requirements)
+  - [Hardware Requirements](#hardware-requirements)
+  - [Operating System](#operating-system)
+- [SORT3D-Bench: Setup](#sort3d-bench-setup)
+  - [1) Conda Environment](#1-conda-environment)
+  - [2) Dataset Setup](#2-dataset-setup)
+- [SORT3D-Bench: Usage](#sort3d-bench-usage)
+- [SORT3D-Nav: Setup](#sort3d-nav-setup)
+  - [0) Cloning Repo and Recommended Installation Method](#0-cloning-repo-and-recommended-installation-method)
+  - [1) Docker Installation (Recommended)](#1-docker-installation-recommended)
+  - [2) Pulling and Preparing Docker Image](#2-pulling-and-preparing-docker-image)
+  - [3a) Building ROS Humble System with Wheelchair Simulator](#3a-building-ros-humble-system-with-wheelchair-simulator)
+  - [3b) Building ROS Noetic System with Wheelchair Simulator (Ubuntu 22.04)](#3b-building-ros-noetic-system-with-wheelchair-simulator-ubuntu-2204)
+  - [(Optional) Installing ROS Humble System Dependencies Without Docker](#optional-installing-ros-humble-system-dependencies-without-docker)
+  - [(Optional) Installing ROS Noetic System Dependencies Without Docker](#optional-installing-ros-noetic-system-dependencies-without-docker)
+- [SORT3D-Nav: Usage](#sort3d-nav-usage)
+  - [Simulation with Ground Truth Semantics](#simulation-with-ground-truth-semantics)
+  - [Simulation with Semantic Mapping Module](#simulation-with-semantic-mapping-module)
+  - [ROS Bag](#ros-bag)
+- [Troubleshooting](#troubleshooting)
+- [Citation](#citation)
+
+## Repository Structure
+
+SORT3D has two major versions:
+
+1. **SORT3D-Bench**: The version of SORT3D used to run the [ReferIt3D](https://referit3d.github.io) and the [IRef-VLA](https://github.com/HaochenZ11/IRef-VLA) benchmarks.
+2. **SORT3D-Nav**: The version of SORT3D used to run navigation on our robot platforms, built on top of our base autonomy stack. SORT3D is deployed on two research platforms:
+    1. [Our wheelchair-base robot (**wheelchair**)](https://github.com/jizhang-cmu/cmu_vla_challenge_unity), for which we have both **ROS Noetic** and **ROS Humble** versions.
+    2. [Our mecanum-wheeled robot (**mecanum**)](https://github.com/jizhang-cmu/autonomy_stack_mecanum_wheel_platform), for which we have a **ROS Humble** version.
+
+This repository contains a separate branch for each platform and each ROS version SORT3D-Nav is deployed on. The SORT3D-Bench script is included in the `humble-wheelchair` branch. Each version of SORT3D-Nav is accompanied with a unity-based simulator and a ROS bag recording of the office areas the live demonstrations were recorded in. Additionally, we provide launch scripts of SORT3D-Nav using both ground truth semantic segmentations and our live semantic mapping module. The table below summarizes the currently available systems and their respective branches:
+
+| Platform | ROS Version | Branch | Simulation Available | Live Demo Available (Using ROS Bag) | Ground Truth Semantics Available | Semantic Mapping Module Available |
+|---|---|---|---|---|---|---|
+| Benchmark  | - | `humble-wheelchair` | ☑️ | - | ☑️ | - |
+| Wheelchair | Noetic | `humble-wheelchair` | ☑️ | Soon! | ☑️ | Soon! |
+| Wheelchair | Humble | `noetic-wheelchair` | ☑️ | Soon! | ☑️ | Soon! |
+| Mecanum | Humble | `humble-mecanum` | Soon! | Soon! | Soon! | Soon! |
+
+## Data
+
+### Dataset For SORT3D-Bench
+
+To run SORT3D-Bench, ensure the following three datasets are downloaded and unzipped:
+
+1. **Object Captions Dataset**: For our benchmark, we have pregenerated 2D object crops and captions using our captioning system and [Qwen2.5-VL](#https://github.com/QwenLM/Qwen2.5-VL). To download, first install minio and tqdm:
+
+    ```bash
+    pip install minio tqdm
+    ```
+
+    Then run
+
+    ```bash
+    python data/download_crops_dataset.py --download_path data
+    ```
+
+    The data will be downloaded as a zip file in `data/`. Unzip the file directly into `data`, the path to the unzipped folder should be `data/captions`.
+
+2. **IRef-VLA Scannet**: We use the processed pointclouds in [IRef-VLA](https://github.com/HaochenZ11/IRef-VLA) for our benchmark. Follow the [instructions in the repo](https://github.com/HaochenZ11/IRef-VLA/tree/main?tab=readme-ov-file#dataset-download) and download only the Scannet subset of the data:
+    ```bash
+    python download_dataset.py --download_path data/IRef-VLA --subset scannet
+    ```
+
+    Afterwards, unzip Scannet.zip into `data/IRef-VLA`. The folder structure should be `data/IRef-VLA/Scannet`.
+
+3. **ReferIt3D**: We provide the subsets of [ReferIt3D](https://referit3d.github.io/) used for the benchmark in `data/referit3d`.
+
+The final folder structure should look like so:
+
+data/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IRef-VLA/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;captions/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;referit3d/<br>
+
+
+### ROS Bag Files for SORT3D-Nav
+
+We provide ROS bag files for both the wheelchair and mecanum platforms. To download, install minio and tqdm:
+
+```bash
+pip install minio tqdm
+```
+
+Then run
+
+```bash
+python data/download_rosbag.py --download_path bagfiles --platform [wheelchair|mecanum]
+```
+
+while making sure to pick the correct platform. Each ROS bag will be downloaded as a zip file in `bagfiles/`. Unzip the bag files into your directory of choice before replaying them. The wheelchair bag file is currently available, with the mecanum-wheeled robot bag file upcoming with the release of the mecanum version of SORT3D-Nav.
+
+## System Requirements
+
+### Hardware Requirements
+
+SORT3D-Nav has been deployed on an NVidia RTX 4090 with 24GB of VRAM to run the live captioning model on the wheelchair. The system requires around 16GB of VRAM to run the semantic mapping module along with live captioning. The system uses around 12GB of VRAM to run using ground truth semantics with live captioning. We will add a breakdown of memory usage and options to reduce usage for lower end devices soon!
+
+### Operating System
+
+This system has been tested in Ubuntu 20.04, 22.04, and 24.04, running in the Ubuntu 22.04 Docker image we provide. 
+
+## SORT3D-Bench: Setup
+
+### 1) Conda Environment
+
+**First, make sure you are checked out into `humble-wheelchair`**:
+```
+git checkout humble-wheelchair
+```
+
+We provide a conda environment containing all the the dependencies required for SORT3D-Bench, which does not require ROS. Create the conda environment like so.
+
+```bash
+conda env create -f environment.yml -n sort3d
+```
+
+A `requirements.txt` is also provided mirroring the pip requirements in the `environment.yml`. The Docker image contains all the requirements for SORT3D-Bench preinstalled as well. You may follow sections 1-2 in [Setup: SORT3D-Nav](#setup-sort3d-nav) to install Docker and set the image up.
+
+### 2) Dataset Setup
+
+Follow the instructions in [Dataset For SORT3D-Bench](#dataset-for-sort3d-bench) to ensure the dataset is correctly set up.
+
+## SORT3D-Bench: Usage
+
+SORT3D uses [Mistral Large 2](https://mistral.ai/) by default. Create a free research API key, then set the environment variable `MISTRAL_API_KEY`:
+```bash
+export MISTRAL_API_KEY="YOUR API KEY HERE"
+```
+You may then run the benchmark on either Nr3D or Sr3D:
+```bash
+cd ai_module/src/language_planner/language_planner
+conda activate sort3d
+python language_planner_benchmark.py --dataset [nr3d|sr3d]
+```
+Choose `nr3d` or `sr3d` as the `--dataset` argument to run the benchmark on our subsets of Nr3D and Sr3D respectively. The benchmark results are logged in `ai_module/src/language_planner/language_planner/logs/exp###` by default (where ### starts at 000 and is automatically incremented with each run). The script logs all correct answers and LLM reasoning in `correct.json`, and all incorrect answers in `incorrect.json`.
+
+The script takes a set of optional arguments. The fully supported ones for this release are tabulated below:
+| Argument | Supported Values | Description |
+|---|---|---|
+|`--exp_name`| Any string | Give the current experiment an optional name. Default is exp###, where ### is an automatically assigned number. |
+|`--model`| `mistral` - `gpt-4o` | Use a different LLM for grounding. Default is Mistral, and we have tested GPT-4o in our paper; other models included in our code may be buggy. For OpenAI, provide the API key in the `OPENAI_API_KEY` environment variable. |
+
+## SORT3D-Nav: Setup
+
+### 0) Cloning Repo and Recommended Installation Method
+
+Begin by cloning the repo with its submodules in your home directory:
+```bash
+cd ~
+git clone https://github.com/nzantout/VLNav-Improved.git --recursive
+```
+
+We provide a CUDA-enabled Ubuntu 22.04 Docker image with both ROS Noetic (built from source) and ROS Humble preinstalled. **This is the recommended way to run SORT3D, as ROS and all dependencies are preinstalled in the docker image.** Follow sections 1 through 3 to install Docker on your computer, pull the image, and download simulation files. The user home directory, `/home/$USER`, is mounted as a volume in the Docker image, allowing access to the repo from the Docker image if the repo has been cloned within the home directory. We provide optional instructions to install the system on a base Ubuntu 22.04 system for both [ROS Humble](#optional-installing-ros-humble-system-dependencies-without-docker) and [ROS Noetic](#optional-installing-ros-noetic-system-dependencies-without-docker).
+
+### 1) Docker Installation (Recommended)
+
+Install Docker and grant user permission.
+```
+curl https://get.docker.com | sh && sudo systemctl --now enable docker
+sudo usermod -aG docker ${USER}
+```
+Make sure to **restart the computer**, then install Nvidia Container Toolkit (Nvidia GPU Driver
+should be installed already).
+
+```
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor \
+  -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+  | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+  | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+```
+```
+sudo apt update && sudo apt install nvidia-container-toolkit
+```
+Configure Docker runtime and restart Docker daemon.
+```
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+Test if the installation is successful. You should see something like below.
+```
+docker run --gpus all --rm nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+```
+```
+Sat Dec 16 17:27:17 2023       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 525.125.06   Driver Version: 525.125.06   CUDA Version: 12.0     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0  On |                  N/A |
+| 24%   50C    P0    40W / 200W |    918MiB /  8192MiB |      3%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
++-----------------------------------------------------------------------------+
+```
+
+### 2) Pulling and Preparing Docker Image
+
+Allow remote X connections.
+```
+xhost +
+```
+
+Pull the Docker image and build the container:
+```bash
+cd docker
+docker compose -f compose_gpu.yml up --build -d
+```
+
+To run without rebuilding:
+```bash
+docker compose -f compose_gpu.yml up -d
+```
+
+You may then access the running container.
+```bash
+docker exec -it ubuntu22_ros bash
+```
+
+### 3a) Building ROS Humble System with Wheelchair Simulator
+
+**Make sure you are checked out into `humble-wheelchair`**:
+```
+git checkout humble-wheelchair
+```
+
+The instructions for building the base system are excerpted from [its original repo](https://github.com/jizhang-cmu/cmu_vla_challenge_unity/tree/foxy-humble). Start by making sure ROS Humble is sourced:
+
+```bash
+source /opt/ros/humble/setup.bash
+```
+Then build the base autonomy system in `simulator/wheelchair_unity`:
+```bash
+cd simulator/wheelchair_unity
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+```
+
+Download any of our [Unity environment models](https://drive.google.com/drive/folders/1ZDkAsXIBNCG6O6NGx81eW3HVU10oKVfZ?usp=sharing) **(the models are configured for ROS2, not compatible with ROS1)** and unzip the files to the 'src/vehicle_simulator/mesh/unity' folder. The environment model files should look like below. Note that the 'AssetList.csv' file is generated upon start of the system.
+
+mesh/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unity/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;environment/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model_Data/ (multiple files in the folder)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model.x86_64<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UnityPlayer.so<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssetList.csv (generated at runtime)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dimensions.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Categories.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_list.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;traversable_area.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.jpg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render.jpg<br>
+
+Finally, build SORT3D-Nav in `ai_module`:
+
+```bash
+cd ../../ai_module
+colcon build --symlink-install
+```
+
+### 3b) Building ROS Noetic System with Wheelchair Simulator (Ubuntu 22.04)
+
+**Make sure you are checked out into `noetic-wheelchair`**:
+```bash
+git checkout noetic-wheelchair
+```
+
+The instructions for building the base system are excerpted from [its original repo](https://github.com/jizhang-cmu/cmu_vla_challenge_unity). Since SORT3D requires Python > 3.9 to work, ROS Noetic cannot be used on its default 20.04, and must be built from source on Ubuntu 22.04. Instructions to build ROS Noetic on Ubuntu 22.04 from source are in [this section](#optional-building-ros-noetic-system-in-base-ubuntu-2204), and ROS Noetic is already prebuilt in the provided Docker image. The base autonomy system requires extra ROS dependencies which we have modified to compile on Ubuntu 22.04, found in `simulator/noetic_ubuntu22_extra_deps`. These dependencies must be built first, then the [workspace overlaid](https://wiki.ros.org/catkin/Tutorials/workspace_overlaying) by sourcing it before building the simulator workspace:
+
+```bash
+source /opt/ros/noetic/setup.bash
+cd simulator/noetic_ubuntu22_extra_deps
+catkin_make
+source devel/setup.bash
+cd ../wheelchair_unity
+catkin_make
+```
+
+Download any of our [Unity environment models](https://drive.google.com/drive/folders/1bmxdT6Oxzt0_0tohye2br7gqTnkMaq20?usp=share_link) **(the models are configured for ROS1, not compatible with ROS2)** and unzip the files to the 'src/vehicle_simulator/mesh/unity' folder. The environment model files should look like below. Note that the 'AssetList.csv' file is generated upon start of the system.
+
+mesh/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unity/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;environment/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model_Data/ (multiple files in the folder)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model.x86_64<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UnityPlayer.so<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssetList.csv (generated at runtime)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dimensions.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Categories.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_list.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;traversable_area.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.jpg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render.jpg<br>
+
+Finally, build SORT3D-Nav in `ai_module`:
+```bash
+cd ../../ai_module
+catkin_make
+```
+
+### (Optional) Installing ROS Humble System Dependencies without Docker
+
+This section contains instructions to install ROS Humble and SORT3D-Nav system dependencies on a base Ubuntu 22.04 system. Please report any issues to the issue tracker.
+
+1. Begin by installing ros-humble-desktop, following the [ROS wiki page](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html).
+2. Install CUDA Toolkit 12.x following [the instructions on the official website](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/#ubuntu). This system has been tested with CUDA 12.1, but should work with higher CUDA versions.
+3. Install ROS Humble dependencies for the base autonomy system:
+    ```bash
+    sudo apt update
+    sudo apt install libusb-dev ros-humble-perception-pcl ros-humble-sensor-msgs-py ros-humble-tf-transformations ros-humble-joy python3-colcon-common-extensions python-is-python3 
+    pip install transforms3d pyyaml
+    ```
+4. Install the pip dependencies for SORT3D-Nav. Make sure you are in this repo's top level directory:
+    ```bash
+    pip install -r requirements.txt
+    ```
+5. Follow [Section 3a](#3a-building-ros-humble-system-with-wheelchair-simulator) to set up the system.
+
+
+### (Optional) Installing ROS Noetic System Dependencies without Docker
+
+This section contains instructions to build ROS Noetic from source and SORT3D-Nav system dependencies on a base Ubuntu 22.04 system. Please report any issues to the issue tracker.
+
+1. As ROS Noetic does not support Ubuntu 22.04, it must be built from source. Follow the instructions in [this Reddit post](https://www.reddit.com/r/ROS/comments/158icpy/compiling_ros1_noetic_from_source_on_ubuntu_2204/), mirrored in [this repository](https://github.com/nzantout/ros-noetic-ubuntu-2204-compile-instructions).
+2. Install CUDA Toolkit 12.x following [the instructions on the official website](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/#ubuntu). This system has been tested with CUDA 12.1, but should work with higher CUDA versions.
+3. Install ROS Noetic dependencies for the base autonomy system:
+    ```
+    sudo apt update
+    sudo apt install libusb-dev python-yaml python-is-python3
+    ```
+4. Install the pip dependencies for SORT3D-Nav. Make sure you are in this repo's top level directory:
+    ```bash
+    pip install -r requirements.txt
+    ```
+5. Follow [Section 3b](#3b-building-ros-noetic-system-with-wheelchair-simulator-ubuntu-2204) to set up the system.
+
+
+## SORT3D-Nav: Usage
+
+### Simulation with Ground Truth Semantics
+
+**The instructions for running the simulated system are the same regardless of which branch you are**
+
+SORT3D uses [Mistral Large 2](https://mistral.ai/) by default. Create a free research API key, then replace the placeholder in [`scripts/run_full_system_gt_semantics.sh`](scripts/run_sort3d_navigation_gt_semantics.sh) with your API key:
+```
+export MISTRAL_API_KEY="YOUR API KEY HERE"
+```
+You may do the same with [`scripts/run_sort3d_navigation_gt_semantics.sh`](scripts/run_sort3d_navigation_gt_semantics.sh) if you want to run SORT3D separately from the base autonomy system. Make sure all the scripts are executable:
+
+```
+chmod -R +x scripts 
+```
+
+Then, in one terminal, run
+```
+scripts/run_full_system_gt_semantics.sh
+```
+
+Wait until the system starts up. You should see the RViz and Unity windows open:
+
+<img src="media/rviz.png" alt="RViz window" width="63%"> <img src="media/unity_window.png" alt="Unity window" width="36%">
+
+In your terminal, the captioning and language planner nodes will be logging to standard output:
+
+<img src="media/captioning_terminal.png" alt="" class="">
+
+In another terminal, make sure the `ai_module` workspace is sourced, then run the query publisher node to take in from standard input:
+
+```
+scripts/run_query_publisher.sh
+```
+
+The output of the query publisher node should look like so:
+
+```
+[INFO] [1743652602.832061201] [language_publisher]: LanguagePublisher node has been started. Type your query below.
+Enter a query to publish: 
+```
+
+You may then type a natural language navigation statement, like "go near the red chair", and watch the system navigate:
+
+https://github.com/user-attachments/assets/493a8387-6e71-4cd6-8201-fbd3264c6575
+
+### Simulation with Semantic Mapping Module
+
+Coming soon!
+
+
+### ROS Bag
+
+Coming soon!
+
+
+## Troubleshooting
+
+Please report any issues you face in the issue tracker, and we'll add them here.
+
+## Citation
+
+Pending.

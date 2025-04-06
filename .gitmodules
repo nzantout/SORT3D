@@ -1,0 +1,4 @@
+[submodule "wheelchair_unity"]
+	path = simulator/wheelchair_unity
+	url = git@github.com:jizhang-cmu/cmu_vla_challenge_unity.git
+	branch = foxy-humble
