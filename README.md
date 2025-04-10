@@ -21,7 +21,7 @@
 
 &nbsp;
 
-We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigation system employing a spatial reasoning toolbox and state of the art 2D VLMs for perception.
+We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigation system employing a spatial reasoning toolbox and state of the art 2D VLMs for perception. To the best of our knowledge, this is the first general spatial relation toolbox for autonomous vision-language navigation that is fully integrated into real-robot systems. The toolbox is capable of interpreting both direct and indirect statements about spatial relations, using an LLM for high-level reasoning and guiding the autonomous robot to navigate through the environment.
 
 <div style="text-align: center;"><img src="media/diagram.png" alt="SORT3D Diagram" width="99%"></div>
 
