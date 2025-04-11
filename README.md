@@ -201,7 +201,7 @@ The script takes a set of optional arguments. The fully supported ones for this 
 Begin by cloning the repo with its submodules in your home directory:
 ```bash
 cd ~
-git clone https://github.com/nzantout/VLNav-Improved.git --recursive
+git clone https://github.com/nzantout/SORT3D.git --recursive
 ```
 
 We provide a CUDA-enabled Ubuntu 22.04 Docker image with both ROS Noetic (built from source) and ROS Humble preinstalled. **This is the recommended way to run SORT3D, as ROS and all dependencies are preinstalled in the docker image.** Follow sections 1 through 3 to install Docker on your computer, pull the image, and download simulation files. The user home directory, `/home/$USER`, is mounted as a volume in the Docker image, allowing access to the repo from the Docker image if the repo has been cloned within the home directory. We provide optional instructions to install the system on a base Ubuntu 22.04 system for both [ROS Humble](#optional-installing-ros-humble-system-dependencies-without-docker) and [ROS Noetic](#optional-installing-ros-noetic-system-dependencies-without-docker).
