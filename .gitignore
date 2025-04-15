@@ -5,6 +5,7 @@ install/
 mesh/
 data/captions
 data/IRef-VLA
+ai_module/src/captioner/captioner/crops
 **/.vscode/**
 **/__pycache__/**
 .catkin_workspace

@@ -231,14 +231,13 @@ class LanguagePlanner(Node):
             closest_point = freespace_points[closest_point_idx]
 
             repeats = 5
-            for i in range(repeats):
+            for k in range(repeats):
                 self.publish_waypoint(closest_point)
                 sleep(0.01)
 
             self.log_info(f"Navigating... ({i+1}/{len(waypoints)})")
             while rclpy.ok():
                 dist_from_waypoint = np.linalg.norm(self.cur_pos[:2] - closest_point)
-                self.log_info(f'Distance from goal: {dist_from_waypoint}')
                 if dist_from_waypoint < 1.5:
                     self.recolor_object_markers(object_dict, id_sublist)
                     break

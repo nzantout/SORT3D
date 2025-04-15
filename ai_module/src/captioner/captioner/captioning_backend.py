@@ -4,9 +4,10 @@ import pandas as pd
 import torch
 from typing import Optional
 import threading
+from pathlib import Path
 
 import json
-from time import time
+from datetime import datetime
 from enum import Enum
 from scipy.spatial.transform import Rotation as R
 from captioner.models.clip import OpenCLIP, SigLIPHF
@@ -14,6 +15,7 @@ from captioner.models.captioning import PaliGemmaHFBackend, QwenHFBackend
 from captioner.image_utils.plotting import plot_captioned_images
 from captioner.image_utils.image_conversion import binary_opening_torch
 from captioner.image_utils.caption_postprocessing import postprocess_captions
+from captioner.image_utils.save_semantic_dict import SemanticDictSaver
 
 
 class CaptionGenerationOptions(Enum):
@@ -30,6 +32,8 @@ class Captioner:
     def __init__(
             self,
             semantic_dict: dict = {}, # Can initialize from previous map or initialize certain parameters
+            save_semantic_dict = True,
+            semantic_dict_load_path = None, # Load semantic dict from path
             num_crop_levels: int = 3,
             model_type = "clip",
             image_shape = (640, 1920, 3),
@@ -42,7 +46,7 @@ class Captioner:
             load_captioner = True,
             crop_update_source = "gt_semantics",
             include_ego_robot_as_object = True,
-            batch_size = 16
+            batch_size = 16,
     ):
         # Parameters
 
@@ -58,6 +62,8 @@ class Captioner:
         self.load_captioner = load_captioner
         self.include_ego_robot_as_object = include_ego_robot_as_object
         self.batch_size = batch_size
+        self.save_semantic_dict = save_semantic_dict
+        self.semantic_dict_load_path = semantic_dict_load_path
         # Options
     
         self.caption_generation_option = CaptionGenerationOptions.ON_QUERY
@@ -84,11 +90,16 @@ class Captioner:
 
         self.semantic_id_set = set(semantic_dict.keys())
         self.semantic_dict = semantic_dict
+        if self.semantic_dict_load_path is not None:
+            self.semantic_dict = self.semantic_dict_saver.load_semantic_dict(self.semantic_dict_load_path)
         self.name_embeddings_dict = {}
 
         self.lock = threading.Lock()
 
+        semantic_dict_save_path = str(Path(__file__).parent.resolve() / "crops" / f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}')
+        self.semantic_dict_saver = SemanticDictSaver(semantic_dict_save_path)
 
+ 
     def get_crop(self, image: torch.Tensor, crop_coords: np.ndarray, level: int):
 
         padded_crop_size = image.shape
@@ -434,6 +445,7 @@ class Captioner:
         
         with self.lock:
 
+
             if semantic_ids is None:
                 semantic_ids = semantic_dict.keys()
             
@@ -446,6 +458,8 @@ class Captioner:
                 } for semantic_id in semantic_ids if 
                     semantic_dict[semantic_id]["image"]["rgb"] is not None and 
                     not semantic_dict[semantic_id]["image"]["is_caption_generated"]]
+            
+            self.log_info(f'Generating captions for {len(dict_items)} objects')
             
             if crop_levels is None:
                 # Generate captions for crops with highest similarity level to ground truth input
@@ -466,6 +480,11 @@ class Captioner:
                 self.log_info(f'{semantic_dict[dict_item["key"]]["name"]}: {caption}')
                 semantic_dict[dict_item["key"]]["image"]["caption"] = caption
                 semantic_dict[dict_item["key"]]["image"]["is_caption_generated"] = True
+            
+            if self.save_semantic_dict:
+                self.log_info(f'Saving semantic dict to {self.semantic_dict_saver.save_path}...')
+                self.semantic_dict_saver.save_semantic_dict(semantic_dict)
+                self.log_info(f'Saved semantic dict to {self.semantic_dict_saver.save_path}.')
 
 
     def generate_ego_robot_dict_entry(self, cur_pos: np.ndarray, cur_orient: np.ndarray):
@@ -532,15 +551,6 @@ class Captioner:
                 ordered_results.append((key, similarity_scores))
 
             ordered_results.sort(key=lambda x: max(x[1]), reverse=True)
-
-            # TODO: Transfer to visualization function
-            # captions = [[f'{q[0]} - {self.semantic_dict[q[0]]["name"]["string"]}: {q[1][i]:.3f}' for i in range(len(q[1]))] for q in ordered_results]
-            # images = [[self.get_crop(
-            #     self.semantic_dict[q[0]]["image"]["rgb"],
-            #     self.semantic_dict[q[0]]["image"]["crop_coords"],
-            #     i
-            # ).cpu().numpy() for i in range(len(q[1]))] for q in ordered_results]
-            # self.log_info(f'Captions: {captions}')
 
             # Thresholding
             for i, score in enumerate([max(q[1]) for q in ordered_results]):
