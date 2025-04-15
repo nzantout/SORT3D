@@ -1,18 +1,21 @@
 <launch>
-
+  <!-- Language Planner -->
   <arg name="environment_name" default="a room"/>
   <arg name="ll_model" default="mistral"/>
   <arg name="planner_run_mode" default="use_tools"/>
   <arg name="object_query_type" default="llm"/>
+  <arg name="platform" default="wheelchair"/>
 
+  <!-- Captioner -->
   <arg name="clip_model" default="clip"/>
   <arg name="process_terrain_map_into_freespace" default="False"/>
   <arg name="simulator" default="wheelchair_unity"/>
+  <arg name="captioner_batch_size" default="16"/>
 
   <node pkg="language_planner" exec="language_planner_node" name="language_planner_node" output="screen"
-    args="--environment_name $(var environment_name) --model $(var ll_model) --run_mode $(var planner_run_mode) --object_query_type $(var object_query_type)" />
+    args="--environment_name $(var environment_name) --model $(var ll_model) --run_mode $(var planner_run_mode) --object_query_type $(var object_query_type) --platform $(var platform)" />
 
   <node  pkg="captioner" exec="captioning_node" name="captioning_node" output="screen" 
-    args="--model_type $(var clip_model) --process_terrain_map_into_freespace $(var process_terrain_map_into_freespace) --simulator $(var simulator)" />
+    args="--model_type $(var clip_model) --process_terrain_map_into_freespace $(var process_terrain_map_into_freespace) --simulator $(var simulator) --batch_size $(var captioner_batch_size)" />
 
 </launch>

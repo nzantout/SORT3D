@@ -10,9 +10,11 @@ source ../ai_module/install/setup.bash
 
 cd ../simulator/wheelchair_unity
 ./src/vehicle_simulator/mesh/unity/environment/Model.x86_64 &
-ros2 launch language_planner vehicle_simulator_gt_semantics_launch.xml &
+ros2 launch language_planner vehicle_simulator_semantic_mapping_launch.xml &
 sleep 5
 
-cd $SCRIPT_DIR
-cd ../ai_module
-ros2 launch language_planner sort3d_gt_semantics_launch.xml
+ros2 run language_planner language_planner_node --platform wheelchair &
+sleep 5
+
+cd $SCRIPT_DIR/../semantic_mapper
+python -m semantic_mapping.mapping_ros2_node --config config/mapping_wheelchair.yaml --captioner_batch_size 16

@@ -35,7 +35,9 @@ class CaptioningNode(Node):
             crop_radius = 0.5,
             model_type = 'clip',
             process_terrain_map_into_freespace = False,
-            simulator = 'wheelchair_unity'):
+            simulator = 'wheelchair_unity',
+            batch_size = 16
+            ):
 
         # Variable Initialization
 
@@ -48,6 +50,8 @@ class CaptioningNode(Node):
 
         self.cur_pos_for_freespace: np.ndarray = None
         self.pos_change_threshold = 0.05
+
+        self.batch_size = batch_size
 
         # Ground Truth Map Initialization
 
@@ -121,7 +125,8 @@ class CaptioningNode(Node):
             device=self.device,
             log_info=self.log_info,
             load_captioner=True,
-            crop_update_source="gt_semantics"
+            crop_update_source="gt_semantics",
+            batch_size=self.batch_size
         )
 
         # ROS
@@ -223,7 +228,7 @@ class CaptioningNode(Node):
 
 
     def publish_freespace(self, freespace: np.ndarray):
-        seconds, nanoseconds = self.get_clock().now().seconds_nanoseconds
+        seconds, nanoseconds = self.get_clock().now().seconds_nanoseconds()
         msg = ros2_bag_utils.create_point_cloud(freespace[:, :3], seconds, nanoseconds, frame_id="map")
         self.freespace_pub.publish(msg)
 
@@ -243,6 +248,7 @@ def main():
     parser.add_argument('--model_type', default='clip')
     parser.add_argument('--process_terrain_map_into_freespace', type=lambda x: x.lower() == 'true', default=False)
     parser.add_argument('--simulator', default='wheelchair_unity')
+    parser.add_argument('--batch_size', type=int, default=16)
     args, other_args = parser.parse_known_args()
 
     captioning_node = CaptioningNode(**vars(args))

@@ -1,19 +1,16 @@
 import numpy as np
 import os
-import spacy
 import json
-import open3d as o3d
-import matplotlib.pyplot as plt
-import re
 import argparse
 import sys
+from enum import Enum
 from pathlib import Path
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.time import Time
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, PointStamped
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud2, PointField
@@ -26,6 +23,11 @@ from language_planner.llm_backend.llm_query_langchain import NavQueryRunMode, Ob
 from language_planner.language_planner_backend import LanguagePlannerBackend
 
 from captioner.tools import ros2_bag_utils
+from captioner.captioning_backend import CropUpdateSource
+
+class PlatformType(Enum):
+    WHEELCHAIR = 'wheelchair'
+    MECANUM = 'mecanum'
 
 
 class LanguagePlanner(Node):
@@ -35,7 +37,8 @@ class LanguagePlanner(Node):
             environment_name: str,
             model='mistral',
             run_mode='use_tools',
-            object_query_type='llm'
+            object_query_type='llm',
+            platform: str = 'wheelchair'
             ):
         
         # Parameters
@@ -49,18 +52,21 @@ class LanguagePlanner(Node):
         self.object_query_type = ObjectQueryType(object_query_type)
         self.model = LanguageModel(model)
         self.system_mode = SystemMode.LIVE_NAVIGATION
-
+        self.platform = PlatformType(platform)
         # ROS
 
         super().__init__('language_planner_node')
 
-        self.waypoint_pub = self.create_publisher(Pose2D, '/way_point_with_heading', 5)
+        if self.platform == PlatformType.WHEELCHAIR:
+            self.waypoint_pub = self.create_publisher(Pose2D, '/way_point_with_heading', 5)
+        elif self.platform == PlatformType.MECANUM:
+            self.waypoint_pub = self.create_publisher(PointStamped, '/goal_point', 5)
         self.object_query_pub = self.create_publisher(String, '/object_query', 5)
         self.object_marker_pub = self.create_publisher(Marker, '/selected_object_marker', 5)
 
         self.pose_sub = self.create_subscription(Odometry, '/state_estimation', self.handle_pose, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self.map_sub = self.create_subscription(PointCloud2, '/global_cloud', self.handle_map, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self.freespace_sub = self.create_subscription(PointCloud2, '/terrain_map', self.handle_freespace, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self.map_sub = self.create_subscription(PointCloud2, '/explored_areas', self.handle_map, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self.freespace_sub = self.create_subscription(PointCloud2, '/traversable_area', self.handle_freespace, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
         self.caption_sub = self.create_subscription(String, '/queried_captions', self.handle_captions, 1, callback_group=MutuallyExclusiveCallbackGroup())
         self.planner_query_sub = self.create_subscription(String, '/language_planner_query', self.handle_language_query, 1, callback_group=MutuallyExclusiveCallbackGroup())
@@ -111,11 +117,20 @@ class LanguagePlanner(Node):
 
 
     def publish_waypoint(self, waypoint: np.ndarray):
-        waypoint_msg = Pose2D()
-        waypoint_msg.x = float(waypoint[0]) + 0.0001
-        waypoint_msg.y = float(waypoint[1]) + 0.0001
-        waypoint_msg.theta = 0.
-        self.waypoint_pub.publish(waypoint_msg)
+        if self.platform == PlatformType.WHEELCHAIR:
+            waypoint_msg = Pose2D()
+            waypoint_msg.x = float(waypoint[0]) + 0.0001
+            waypoint_msg.y = float(waypoint[1]) + 0.0001
+            waypoint_msg.theta = 0.
+            self.waypoint_pub.publish(waypoint_msg)
+        elif self.platform == PlatformType.MECANUM:
+            waypoint_msg = PointStamped()
+            waypoint_msg.header.frame_id = "map"
+            waypoint_msg.point.x = float(waypoint[0]) + 0.0001
+            waypoint_msg.point.y = float(waypoint[1]) + 0.0001
+            waypoint_msg.point.z = 0.
+            self.waypoint_pub.publish(waypoint_msg)
+            self.log_info(f'PUBLISHED GOAL POINT')
     
 
     def publish_object_markers(self, object_dict, target_ids):
@@ -215,12 +230,16 @@ class LanguagePlanner(Node):
             closest_point_idx = np.linalg.norm(freespace_points - waypoint, axis=-1).argmin()
             closest_point = freespace_points[closest_point_idx]
 
-            self.publish_waypoint(closest_point)
+            repeats = 5
+            for i in range(repeats):
+                self.publish_waypoint(closest_point)
+                sleep(0.01)
 
             self.log_info(f"Navigating... ({i+1}/{len(waypoints)})")
             while rclpy.ok():
                 dist_from_waypoint = np.linalg.norm(self.cur_pos[:2] - closest_point)
-                if dist_from_waypoint < 1.3:
+                self.log_info(f'Distance from goal: {dist_from_waypoint}')
+                if dist_from_waypoint < 1.5:
                     self.recolor_object_markers(object_dict, id_sublist)
                     break
         
@@ -246,6 +265,7 @@ class LanguagePlanner(Node):
         self.log_info(f'Query received: {msg.data}')
 
         if self.freespace_pcl is None:
+            self.log_info("No freespace map received")
             return
 
         input_statement = msg.data
@@ -306,7 +326,7 @@ def main():
     parser.add_argument('--model', default='mistral')
     parser.add_argument('--run_mode', default='use_tools')
     parser.add_argument('--object_query_type', default='llm')
-
+    parser.add_argument('--platform', default='wheelchair')
     argparse_args, other_args = parser.parse_known_args()
 
     handler = LanguagePlanner(**vars(argparse_args))

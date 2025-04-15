@@ -8,20 +8,14 @@ class GridMapHandler:
         self.origin = origin
 
     def create_2d_map(self, points, freespace, resolution=0.25):
-        # points_2d = points[:, :2]
-        # points_2d[:, 1] = -points_2d[:, 1]
+        points_2d = points[:, :2]
+        points_2d[:, 1] = -points_2d[:, 1]
 
-        # min_x = np.min(points_2d[:, 0])
-        # max_x = np.max(points_2d[:, 0])
-        # min_y = np.min(points_2d[:, 1])
-        # max_y = np.max(points_2d[:, 1])
+        min_x = np.min(points_2d[:, 0])
+        max_x = np.max(points_2d[:, 0])
+        min_y = np.min(points_2d[:, 1])
+        max_y = np.max(points_2d[:, 1])
 
-        min_x = -2
-        max_x = 20
-        min_y = -2
-        max_y = 20
-
-        # print(min_x, min_y, max_x, max_y)
         buffer = 0  # Buffer of 0.5 meters
         min_x -= buffer
         max_x += buffer

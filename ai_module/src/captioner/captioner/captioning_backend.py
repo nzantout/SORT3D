@@ -41,7 +41,8 @@ class Captioner:
             log_info = print,
             load_captioner = True,
             crop_update_source = "gt_semantics",
-            include_ego_robot_as_object = True
+            include_ego_robot_as_object = True,
+            batch_size = 16
     ):
         # Parameters
 
@@ -56,7 +57,7 @@ class Captioner:
         self.log_info = log_info
         self.load_captioner = load_captioner
         self.include_ego_robot_as_object = include_ego_robot_as_object
-
+        self.batch_size = batch_size
         # Options
     
         self.caption_generation_option = CaptionGenerationOptions.ON_QUERY
@@ -75,7 +76,8 @@ class Captioner:
 
         if self.load_captioner:
             self.captioning_model = QwenHFBackend(
-                quantization='int4'
+                quantization='int4',
+                batch_size=self.batch_size
             )
 
         # Variable Initialization
@@ -193,6 +195,8 @@ class Captioner:
             self,
             semantic_id1: int,
             semantic_id2: int,
+            centroid_3d: np.ndarray,
+            bbox_3d: tuple[np.ndarray],
             semantic_dict: dict = None,
     ):
         '''
@@ -208,7 +212,9 @@ class Captioner:
                 semantic_dict[semantic_id2]["image"]["rgb"],
                 semantic_dict[semantic_id2]["image"]["crop_coords"],
                 semantic_dict[semantic_id2]["name"]["string"],
-                self.name_embeddings_dict
+                self.name_embeddings_dict,
+                centroid_3d,
+                bbox_3d
             )
 
             self.log_info(f'Merged dictionary {semantic_dict[semantic_id2]["name"]["string"]} ({semantic_id2}) into {semantic_dict[semantic_id1]["name"]["string"]} ({semantic_id1})')
@@ -237,7 +243,9 @@ class Captioner:
             crop: torch.Tensor,
             crop_coords: np.ndarray,
             name: str,
-            name_embeddings_dict: dict
+            name_embeddings_dict: dict,
+            centroid_3d: np.ndarray,
+            bbox_3d: tuple[np.ndarray]
             ):
         
         if semantic_dict[semantic_id]["image"]["rgb"] is None or \
@@ -260,6 +268,26 @@ class Captioner:
             semantic_dict[semantic_id]["image"]["rgb"] = crop
             semantic_dict[semantic_id]["image"]["crop_coords"] = crop_coords
             semantic_dict[semantic_id]["image"]["is_caption_generated"] = False
+
+            # Update object attributes if using semantic mapping module
+
+            if self.crop_update_source == CropUpdateSource.SEMANTIC_MAPPING_MODULE:
+
+                center, extent, q = bbox_3d
+
+                rpy = R.from_quat(q).as_euler('xyz')
+                heading = rpy[2]
+
+                l, w, h = extent.tolist()
+                largest_face = max(
+                    l * w,
+                    w * h,
+                    l * h)
+                
+                semantic_dict[semantic_id]["centroid"] = centroid_3d.tolist()
+                semantic_dict[semantic_id]["dimensions"] = extent.tolist()
+                semantic_dict[semantic_id]["heading"] = heading
+                semantic_dict[semantic_id]["largest_face"] = largest_face
 
 
     def update_object_crops(
@@ -301,21 +329,12 @@ class Captioner:
                     crop_min_x = int(crop_indices[:, 1].min())
                     crop_max_x = int(crop_indices[:, 1].max())
 
+                    centroid_3d, bbox_3d = None, None # These are preloaded into the initial dictionary
+
                 else:
 
                     semantic_id, bbox_2d, centroid_3d, class_name, bbox_3d = object_attribute
-
-                    center, extent, q = bbox_3d
-
-                    rpy = R.from_quat(q).as_euler('xyz')
-                    heading = rpy[2]
-
-                    l, w, h = extent.tolist()
-                    largest_face = max(
-                        l * w,
-                        w * h,
-                        l * h)
-
+                    
                     if semantic_id not in self.semantic_dict:
                         self.semantic_dict[semantic_id] = {
                         "image": {
@@ -325,15 +344,16 @@ class Captioner:
                             "caption": None,
                             "is_caption_generated": False
                             },
-                        "centroid": centroid_3d.tolist(),
-                        "dimensions": extent.tolist(),
-                        "heading": heading,
-                        "largest_face": largest_face,
+                        "centroid": None,
+                        "dimensions": None,
+                        "heading": None,
+                        "largest_face": None,
                         "name": {
                             "string": class_name,
                             "similarity_to_image": None
                             }
                         }
+                        self.log_info(f'Added {class_name} with ID {semantic_id}')
 
                     crop_min_x = int(bbox_2d[0])
                     crop_min_y = int(bbox_2d[1])
@@ -380,7 +400,10 @@ class Captioner:
                     crop, 
                     crop_coords, 
                     self.semantic_dict[semantic_id]["name"]["string"],
-                    self.name_embeddings_dict)
+                    self.name_embeddings_dict,
+                    centroid_3d,
+                    bbox_3d
+                )
             
 
         if self.load_captioner and self.caption_generation_option == CaptionGenerationOptions.ON_CLIP_UPDATE:

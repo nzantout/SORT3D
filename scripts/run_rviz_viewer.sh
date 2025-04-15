@@ -6,5 +6,4 @@ export ROS_DOMAIN_ID=1
 
 cd $SCRIPT_DIR
 cd ../ai_module
-source ./install/setup.bash
-ros2 run language_planner language_query_publisher
+ros2 run rviz2 rviz2 -d src/language_planner/rviz/rosbag_semantic_mapping.rviz

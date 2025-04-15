@@ -46,12 +46,13 @@ class PaliGemmaHFBackend(CaptioningModel):
     def __init__(
             self,
             model_id = "google/paligemma2-3b-ft-docci-448",
-            quantization: Optional[str] = "int4"
+            quantization: Optional[str] = "int4",
+            batch_size: Optional[int] = 16
             ):
 
         self.model_id = model_id
-        # self.model_id = "google/paligemma2-3b-pt-448"
-
+        self.batch_size = batch_size
+        
         if quantization == "int8":
             bnb_config = BitsAndBytesConfig(
                 load_in_8bit=True,
@@ -81,11 +82,11 @@ class PaliGemmaHFBackend(CaptioningModel):
 
         self.prompt = "<image>caption en "
 
-    def generate_captions(self, images, batch_size = 24):
+    def generate_captions(self, images):
 
         captions = []
 
-        for batch in self.split_into_batches(images, batch_size): 
+        for batch in self.split_into_batches(images, self.batch_size): 
 
             start_time = time()  
 
@@ -114,17 +115,23 @@ class PaliGemmaHFBackend(CaptioningModel):
 class QwenHFBackend(CaptioningModel):
     def __init__(
             self,
-            model_id = "Qwen/Qwen2.5-VL-3B-Instruct",
-            quantization: Optional[str] = "int4"
+            model_id = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ",
+            quantization: Optional[str] = "int4",
+            batch_size: Optional[int] = 16
             ):
 
         self.model_id = model_id
+        self.batch_size = batch_size
 
 
-        self.processor = Qwen2_5_VLProcessor.from_pretrained(model_id, padding_side="left")
+        self.processor = Qwen2_5_VLProcessor.from_pretrained(
+            model_id, 
+            padding_side="left",
+            # torch_dtype=torch.float16
+            )
         self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             model_id, 
-            torch_dtype="auto", 
+            # torch_dtype=torch.float16, 
             device_map="auto",
             # attn_implementation="flash_attention_2"
             )
@@ -133,7 +140,7 @@ class QwenHFBackend(CaptioningModel):
 
         self.prompt = "Describe the {obj} in this image, using properties like color, material, shape, affordances, and other meaningful attributes. Provide the response in this format: “The <object name> is <color>, <material>, <shape>."
 
-    def generate_captions(self, images, names: list[str], batch_size = 4):
+    def generate_captions(self, images, names: list[str]):
 
         messages = [[
             {
@@ -157,7 +164,7 @@ class QwenHFBackend(CaptioningModel):
 
         # prompts = [self.prompt.format(name) for name in names]
 
-        for batch in self.split_into_batches(list(zip(images, prompts)), batch_size): 
+        for batch in self.split_into_batches(list(zip(images, prompts)), self.batch_size): 
 
             image_batch = [b[0] for b in batch]
             prompt_batch = [b[1] for b in batch]
