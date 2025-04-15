@@ -569,7 +569,7 @@ Enter a query to publish:
 
 Afterwards, drive the robot around to create a semantic map of the scene scene either using the virtual joystick or by clicking the "Waypoint with Heading" button and supplying waypoints:
 
-<img src="media/rviz_semantic_mapping.gif" alt="Rviz semantic mapping">
+**PLACEHOLDER FOR VIDEO**
 
 You may then type a natural language navigation statement, like "go near the red chair", and watch the system navigate:
 
@@ -604,7 +604,7 @@ ros2 bag play [ros_bag].bag
 
 Follow the instructions on screen to pause/unpause the bag file. Run the bag for a while to generate a map, and you can see it being generated in the Rviz screen:
 
-<img src="media/rviz_semantic_mapping_rosbag.gif" alt="">
+**PLACEHOLDER FOR VIDEO**
 
 To see the target bounding boxes for a query being generated, you may pause the ROS bag, then run the query publisher in a fourth terminal and provide a query:
 
