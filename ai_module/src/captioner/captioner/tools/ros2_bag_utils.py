@@ -1,41 +1,42 @@
 import os
-import rclpy
-from rclpy.time import Time
-from sensor_msgs.msg import PointCloud2, PointField
-from nav_msgs.msg import Odometry
-import sensor_msgs_py.point_cloud2 as pc2
-from std_msgs.msg import Header
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point, TransformStamped
-from tf2_msgs.msg import TFMessage
+import struct
+from typing import List, Union
 
 import numpy as np
-from scipy.spatial.transform import Rotation as R
-import struct
-
+import rclpy
 import rosbag2_py
 from builtin_interfaces.msg import Time as TimeMsg
+from geometry_msgs.msg import Point, TransformStamped
+from nav_msgs.msg import Odometry
+from rclpy.time import Time
+from scipy.spatial.transform import Rotation as R
+from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs_py import point_cloud2 as pc2
+from std_msgs.msg import Header
+from tf2_msgs.msg import TFMessage
+from visualization_msgs.msg import Marker
+
 
 def init_bag_writer(output_path: str):
-    # Create a StorageOptions object to define where and how the bag is stored
+    """Initialize a ROS2 bag writer."""
     storage_options = rosbag2_py.StorageOptions(
-        uri=output_path,  # Path to store the bag file
-        storage_id='sqlite3'  # Use SQLite storage backend
+        uri=output_path,
+        storage_id='sqlite3'
     )
 
-    # Create a ConverterOptions object to define serialization format
     converter_options = rosbag2_py.ConverterOptions(
-        input_serialization_format='cdr',  # Default serialization format
+        input_serialization_format='cdr',
         output_serialization_format='cdr'
     )
 
-    # Create a writer instance
     writer = rosbag2_py.SequentialWriter()
     writer.open(storage_options, converter_options)
 
     return writer
 
-def add_topic(writer, topic_name, message_type):
+
+def add_topic(writer, topic_name: str, message_type: str):
+    """Add a topic to a ROS2 bag writer."""
     writer.create_topic(
         rosbag2_py.TopicMetadata(
             name=topic_name,
@@ -44,7 +45,9 @@ def add_topic(writer, topic_name, message_type):
         )
     )
 
-def create_odom_msg(odom, seconds: int, nanoseconds: int, frame_id="map"):
+
+def create_odom_msg(odom: dict, seconds: int, nanoseconds: int, frame_id: str = "map") -> Odometry:
+    """Create an Odometry message."""
     ros_odom = Odometry()
     ros_odom.header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
     ros_odom.header.frame_id = frame_id
@@ -57,7 +60,10 @@ def create_odom_msg(odom, seconds: int, nanoseconds: int, frame_id="map"):
     ros_odom.pose.pose.orientation.w = odom['orientation'][3]
     return ros_odom
 
-def create_tf_msg(odom, seconds: int, nanoseconds: int, frame_id="map", child_frame_id="sensor"):
+
+def create_tf_msg(odom: dict, seconds: int, nanoseconds: int,
+                 frame_id: str = "map", child_frame_id: str = "sensor") -> TFMessage:
+    """Create a TF message."""
     transform = TransformStamped()
     transform.header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
     transform.header.frame_id = frame_id
@@ -74,7 +80,10 @@ def create_tf_msg(odom, seconds: int, nanoseconds: int, frame_id="map", child_fr
     tf_msg.transforms.append(transform)
     return tf_msg
 
-def create_point_cloud(points: np.array, seconds: int, nanoseconds: int, frame_id="map"):
+
+def create_point_cloud(points: np.ndarray, seconds: int, nanoseconds: int,
+                      frame_id: str = "map") -> PointCloud2:
+    """Create a PointCloud2 message."""
     header = Header()
     header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
     header.frame_id = frame_id
@@ -101,7 +110,11 @@ def create_point_cloud(points: np.array, seconds: int, nanoseconds: int, frame_i
 
     return point_cloud
 
-def create_colored_point_cloud(points: np.array, colors: np.array, seconds: int, nanoseconds: int, frame_id="map"):
+
+def create_colored_point_cloud(points: np.ndarray, colors: np.ndarray,
+                             seconds: int, nanoseconds: int,
+                             frame_id: str = "map") -> PointCloud2:
+    """Create a colored PointCloud2 message."""
     header = Header()
     header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
     header.frame_id = frame_id
@@ -137,7 +150,11 @@ def create_colored_point_cloud(points: np.array, colors: np.array, seconds: int,
 
     return point_cloud
 
-def create_wireframe_marker_from_corners(corners, ns: str, box_id: str, color: list|np.ndarray, seconds: int, nanoseconds: int, frame_id="map"):
+
+def create_wireframe_marker_from_corners(corners: List[List[float]], ns: str, box_id: str,
+                                       color: Union[list, np.ndarray], seconds: int,
+                                       nanoseconds: int, frame_id: str = "map") -> Marker:
+    """Create a wireframe marker from corners."""
     marker = Marker()
     marker.header.frame_id = frame_id
     marker.type = Marker.LINE_LIST
@@ -167,62 +184,59 @@ def create_wireframe_marker_from_corners(corners, ns: str, box_id: str, color: l
 
     return marker
 
-def get_3d_box(center, box_size, heading_angle):
-    ''' Calculate 3D bounding box corners from its parameterization.
 
-    Input:
-        box_size: tuple of (length, wide, height)
-        heading_angle: rad scalar, clockwise from pos x axis
-        center: tuple of (x,y,z)
-    Output:
-        corners_3d: numpy array of shape (8,3) for 3D box cornders
-    '''
+def get_3d_box(center: List[float], box_size: List[float], heading_angle: float) -> List[List[float]]:
+    """Calculate 3D bounding box corners from its parameterization."""
     def rotz(t):
         c = np.cos(t)
         s = np.sin(t)
-        return np.array([[c,  s,  0],
-                         [-s,  c,  0],
-                         [0,  0,  1]])
-    
-    R = rotz(heading_angle)
-    l,w,h = box_size
-    x_corners = [-l/2,l/2,l/2,-l/2,-l/2,l/2,l/2,-l/2]
-    y_corners = [-w/2,-w/2,w/2,w/2,-w/2,-w/2,w/2,w/2]
-    z_corners = [-h/2,-h/2,-h/2,-h/2,h/2,h/2,h/2,h/2]
-    corners_3d = np.dot(R, np.vstack([x_corners,y_corners,z_corners]))
-    corners_3d[0,:] = corners_3d[0,:] + center[0]
-    corners_3d[1,:] = corners_3d[1,:] + center[1]
-    corners_3d[2,:] = corners_3d[2,:] + center[2]
+        return np.array([[c, s, 0],
+                        [-s, c, 0],
+                        [0, 0, 1]])
+
+    rot = rotz(heading_angle)
+    l, w, h = box_size
+    x_corners = [-l/2, l/2, l/2, -l/2, -l/2, l/2, l/2, -l/2]
+    y_corners = [-w/2, -w/2, w/2, w/2, -w/2, -w/2, w/2, w/2]
+    z_corners = [-h/2, -h/2, -h/2, -h/2, h/2, h/2, h/2, h/2]
+    corners_3d = np.dot(rot, np.vstack([x_corners, y_corners, z_corners]))
+    corners_3d[0, :] += center[0]
+    corners_3d[1, :] += center[1]
+    corners_3d[2, :] += center[2]
     corners_3d = np.transpose(corners_3d)
     return corners_3d.tolist()
 
-def create_wireframe_marker(center, extent, yaw, ns, box_id, color, seconds: int, nanoseconds: int, frame_id="map"):
-    # Compute the corners of the bounding box
-    corners = get_3d_box(center, extent, yaw)
-    return create_wireframe_marker_from_corners(corners, ns, box_id, color, seconds, nanoseconds, frame_id)
 
-def create_point_marker(center, box_id=0, frame_id="world", color=(1.0, 0.0, 0.0, 0.8)):
+def create_wireframe_marker(center: List[float], extent: List[float], yaw: float,
+                          ns: str, box_id: str, color: List[float],
+                          seconds: int, nanoseconds: int,
+                          frame_id: str = "map") -> Marker:
+    """Create a wireframe marker."""
+    corners = get_3d_box(center, extent, yaw)
+    return create_wireframe_marker_from_corners(corners, ns, box_id, color,
+                                              seconds, nanoseconds, frame_id)
+
+
+def create_point_marker(center: List[float], box_id: int = 0,
+                       frame_id: str = "world",
+                       color: tuple = (1.0, 0.0, 0.0, 0.8)) -> Marker:
+    """Create a point marker."""
     marker = Marker()
-    
-    # Set the frame ID and marker type
     marker.header.frame_id = frame_id
     marker.type = Marker.POINTS
     marker.action = Marker.ADD
     marker.id = box_id
     marker.ns = "points"
 
-    # Set the color (red wireframe in this case)
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]
     marker.color.a = color[3]
 
-    # Set the scale of the points (size)
-    marker.scale.x = 0.5  # Point size
+    marker.scale.x = 0.5
     marker.scale.y = 0.5
     marker.scale.z = 0.5
-    
-    # Set the pose
+
     marker.pose.position.x = 0
     marker.pose.position.y = 0
     marker.pose.position.z = 0
@@ -231,38 +245,45 @@ def create_point_marker(center, box_id=0, frame_id="world", color=(1.0, 0.0, 0.0
     marker.pose.orientation.z = 0
     marker.pose.orientation.w = 1
 
-    # Add the point to the marker
     p = Point(*center)
     marker.points.append(p)
 
     return marker
 
-def create_text_marker(center, marker_id, text, color, text_height,  seconds: int, nanoseconds: int, frame_id="map"):
+
+def create_text_marker(center: List[float], marker_id: int, text: str,
+                      color: List[float], text_height: float,
+                      seconds: int, nanoseconds: int,
+                      frame_id: str = "map") -> Marker:
+    """Create a text marker."""
     marker = Marker()
     marker.header.frame_id = frame_id
     marker.header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
     marker.ns = "text"
-    marker.id = int(marker_id)  # Unique ID
+    marker.id = int(marker_id)
     marker.type = Marker.TEXT_VIEW_FACING
     marker.action = Marker.ADD
-    
-    # Set position
+
     marker.pose.position.x = center[0]
     marker.pose.position.y = center[1]
     marker.pose.position.z = center[2]
-    
-    # Text properties
-    marker.scale.z = text_height  # Text height
+
+    marker.scale.z = text_height
 
     marker.color.r = color[0]
     marker.color.b = color[1]
     marker.color.g = color[2]
-    marker.color.a = color[3]  # Fully visible
+    marker.color.a = color[3]
     marker.text = text
 
     return marker
 
-def create_box_marker(center, extent, yaw, ns, box_id, color, seconds: int, nanoseconds:int, frame_id="map"):
+
+def create_box_marker(center: List[float], extent: List[float], yaw: float,
+                     ns: str, box_id: int, color: List[float],
+                     seconds: int, nanoseconds: int,
+                     frame_id: str = "map") -> Marker:
+    """Create a box marker."""
     marker = Marker()
     marker.header.frame_id = frame_id
     marker.header.stamp = Time(seconds=seconds, nanoseconds=nanoseconds).to_msg()
@@ -271,27 +292,23 @@ def create_box_marker(center, extent, yaw, ns, box_id, color, seconds: int, nano
     marker.type = Marker.CUBE
     marker.action = Marker.ADD
 
-    # Set position (center of the cube)
     marker.pose.position.x = center[0]
     marker.pose.position.y = center[1]
     marker.pose.position.z = center[2]
 
-    # Convert yaw to quaternion (assuming rotation about Z-axis)
     quat = R.from_euler('xyz', [0, 0, yaw]).as_quat()
     marker.pose.orientation.x = quat[0]
     marker.pose.orientation.y = quat[1]
     marker.pose.orientation.z = quat[2]
     marker.pose.orientation.w = quat[3]
 
-    # Set scale (dimensions of the cube)
-    marker.scale.x = extent[0]  # Width
-    marker.scale.y = extent[1]  # Height
-    marker.scale.z = extent[2]  # Depth
+    marker.scale.x = extent[0]
+    marker.scale.y = extent[1]
+    marker.scale.z = extent[2]
 
-    # Set color (RGBA)
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]
-    marker.color.a = color[3]  # Semi-transparent
+    marker.color.a = color[3]
 
     return marker

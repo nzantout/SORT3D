@@ -127,10 +127,6 @@ class LanguagePlannerBenchmark:
                     if not os.path.exists(freespace_path): # some scenes don't have free space, TODO: revisit this when evaling on nr3d
                         self.skipped_scenes.append(scene)
                         continue
-
-                    if not os.path.exists(os.path.join(scene_path, "instance_crops")):
-                        self.skipped_scenes.append(scene)
-                        continue
                     
                     freespace_pcl: np.ndarray = self.load_pc(freespace_path, fs=True)
                     #print(self.freespace_pcl.shape)
