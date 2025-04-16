@@ -4,13 +4,14 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /PointCloud22
-      Splitter Ratio: 0.729411780834198
-    Tree Height: 673
+        - /VGraph1/Namespaces1
+      Splitter Ratio: 0.8294117450714111
+    Tree Height: 865
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
-    Expanded: ~
+    Expanded:
+      - /Goalpoint1
     Name: Tool Properties
     Splitter Ratio: 0.5886790156364441
   - Class: rviz_common/Views
@@ -23,16 +24,16 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: FreePaths
-  - Class: teleop_rviz_plugin/TeleopPanel
+  - Class: teleop_rviz_plugin_plus/TeleopPanel
     Name: TeleopPanel
 Visualization Manager:
   Class: ""
   Displays:
     - Class: rviz_default_plugins/Axes
       Enabled: true
-      Length: 1
+      Length: 1.5
       Name: Vehicle
-      Radius: 0.15000000596046448
+      Radius: 0.20000000298023224
       Reference Frame: vehicle
       Value: true
     - Class: rviz_default_plugins/Image
@@ -50,7 +51,7 @@ Visualization Manager:
         Value: /camera/image
       Value: true
     - Class: rviz_default_plugins/Image
-      Enabled: false
+      Enabled: true
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -62,7 +63,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /camera/semantic_image
-      Value: false
+      Value: true
     - Alpha: 0.10000000149011612
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -74,7 +75,7 @@ Visualization Manager:
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
       Color Transformer: FlatColor
-      Decay Time: 10
+      Decay Time: 5
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -100,40 +101,6 @@ Visualization Manager:
     - Alpha: 0.10000000149011612
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: ""
-      Decay Time: 10
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: SemScan
-      Position Transformer: ""
-      Selectable: true
-      Size (Pixels): 2
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /semantic_scan
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 0.10000000149011612
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
         Max Value: 0.9582680463790894
         Min Value: -0.043718695640563965
         Value: true
@@ -142,7 +109,7 @@ Visualization Manager:
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
       Color Transformer: FlatColor
-      Decay Time: 10
+      Decay Time: 5
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -180,13 +147,13 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: true
       Max Color: 255; 255; 255
-      Max Intensity: 0.20000000298023224
+      Max Intensity: 0.10000000149011612
       Min Color: 0; 0; 0
-      Min Intensity: -0.20000000298023224
+      Min Intensity: -0.10000000149011612
       Name: TerrainMap
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 3
+      Size (Pixels): 4
       Size (m): 0.03999999910593033
       Style: Points
       Topic:
@@ -220,7 +187,7 @@ Visualization Manager:
       Name: TerrainMapExt
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 3
+      Size (Pixels): 4
       Size (m): 0.03999999910593033
       Style: Points
       Topic:
@@ -242,7 +209,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.10000000149011612
+      Line Width: 0.05000000074505806
       Name: Path
       Offset:
         X: 0
@@ -295,22 +262,38 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 1
-      Class: rviz_default_plugins/PointStamped
-      Color: 204; 41; 204
+    - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      History Length: 1
-      Name: Waypoint
-      Radius: 0.4000000059604645
+      Name: Goalpoint
+      Namespaces:
+        clear_nodes: false
+        free_goal: true
+        free_odom_position: false
+        last_nav_node: false
+        original_goal: true
+        out_contour: false
+        waypoint: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /viz_node_topic
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/Polygon
+      Color: 0; 255; 0
+      Enabled: false
+      Name: Boundary
       Topic:
         Depth: 5
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /way_point
-      Value: true
-    - Alpha: 0.5
+        Value: /navigation_boundary
+      Value: false
+    - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -319,8 +302,8 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
-      Color: 115; 210; 22
-      Color Transformer: FlatColor
+      Color: 255; 25; 0
+      Color Transformer: ""
       Decay Time: 0
       Enabled: false
       Invert Rainbow: false
@@ -328,11 +311,11 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: TravArea
-      Position Transformer: XYZ
+      Name: AddedObstacles
+      Position Transformer: ""
       Selectable: true
-      Size (Pixels): 2
-      Size (m): 0.009999999776482582
+      Size (Pixels): 3
+      Size (m): 0.05000000074505806
       Style: Points
       Topic:
         Depth: 5
@@ -340,11 +323,11 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /traversable_area
+        Value: /added_obstacles
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 0.20000000298023224
+    - Alpha: 0.10000000149011612
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -356,7 +339,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 0
@@ -377,7 +360,41 @@ Visualization Manager:
         Value: /overall_map
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
+    - Alpha: 0.20000000298023224
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 0; 170; 255
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: ExploredAreas
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 2
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /explored_areas
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -390,16 +407,16 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 6.767867088317871
+      Max Intensity: 46.35158157348633
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Trajectory
       Position Transformer: XYZ
       Selectable: true
-      Size (Pixels): 4
+      Size (Pixels): 7
       Size (m): 0.009999999776482582
       Style: Points
       Topic:
@@ -411,31 +428,198 @@ Visualization Manager:
         Value: /trajectory
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
-    - Class: rviz_default_plugins/MarkerArray
-      Enabled: false
-      Name: ObjectMarkers
-      Namespaces:
-        {}
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /object_markers
       Value: false
     - Class: rviz_default_plugins/Marker
       Enabled: true
-      Name: SelectObjectMarker
+      Name: GlobalPath
       Namespaces:
-        {}
+        global_path: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /selected_object_marker
+        Value: /viz_path_topic
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: VGraph
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /viz_graph_topic
+      Value: false
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: ViewpointExtend
+      Namespaces:
+        corner_direct: true
+        extend_viewpoint: true
+        origin_viewpoint: true
+        raytracing_line: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /viz_viewpoint_extend_topic
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        "{'cabinet': 1, 'chair': 1}": true
+        "{'cabinet': 1}": true
+        "{'cabinet': 2}": true
+        "{'cabinet': 3}": true
+        "{'cabinet': 4}": true
+        "{'cabinet': 5}": true
+        "{'cabinet': 7}": true
+        "{'cabinet': 8}": true
+        "{'cabinet': 9}": true
+        "{'chair': 10}": true
+        "{'chair': 11}": true
+        "{'chair': 12}": true
+        "{'chair': 13}": true
+        "{'chair': 14}": true
+        "{'chair': 15}": true
+        "{'chair': 16}": true
+        "{'chair': 17}": true
+        "{'chair': 1}": true
+        "{'chair': 2}": true
+        "{'chair': 3}": true
+        "{'chair': 4}": true
+        "{'chair': 5}": true
+        "{'chair': 6}": true
+        "{'chair': 7}": true
+        "{'chair': 8}": true
+        "{'chair': 9}": true
+        "{'painting': 10}": true
+        "{'painting': 11}": true
+        "{'painting': 12}": true
+        "{'painting': 13}": true
+        "{'painting': 14}": true
+        "{'painting': 15}": true
+        "{'painting': 16}": true
+        "{'painting': 17}": true
+        "{'painting': 18}": true
+        "{'painting': 19}": true
+        "{'painting': 1}": true
+        "{'painting': 20}": true
+        "{'painting': 21}": true
+        "{'painting': 22}": true
+        "{'painting': 23}": true
+        "{'painting': 24}": true
+        "{'painting': 25}": true
+        "{'painting': 26}": true
+        "{'painting': 27}": true
+        "{'painting': 28}": true
+        "{'painting': 29}": true
+        "{'painting': 2}": true
+        "{'painting': 30}": true
+        "{'painting': 31}": true
+        "{'painting': 32}": true
+        "{'painting': 33}": true
+        "{'painting': 34}": true
+        "{'painting': 35}": true
+        "{'painting': 36}": true
+        "{'painting': 37}": true
+        "{'painting': 38}": true
+        "{'painting': 39}": true
+        "{'painting': 3}": true
+        "{'painting': 40}": true
+        "{'painting': 41}": true
+        "{'painting': 4}": true
+        "{'painting': 5}": true
+        "{'painting': 7}": true
+        "{'painting': 8}": true
+        "{'painting': 9}": true
+        "{'screen': 1, 'chair': 10}": true
+        "{'screen': 1, 'chair': 11}": true
+        "{'screen': 1, 'chair': 13}": true
+        "{'screen': 1, 'chair': 14}": true
+        "{'screen': 1, 'chair': 15}": true
+        "{'screen': 1, 'chair': 16}": true
+        "{'screen': 1, 'chair': 17}": true
+        "{'screen': 1, 'chair': 19}": true
+        "{'screen': 1, 'chair': 1}": true
+        "{'screen': 1, 'chair': 20}": true
+        "{'screen': 1, 'chair': 21}": true
+        "{'screen': 1, 'chair': 22}": true
+        "{'screen': 1, 'chair': 2}": true
+        "{'screen': 1, 'chair': 3}": true
+        "{'screen': 1, 'chair': 4}": true
+        "{'screen': 1, 'chair': 5}": true
+        "{'screen': 1, 'chair': 6}": true
+        "{'screen': 1, 'chair': 7}": true
+        "{'screen': 1, 'chair': 9}": true
+        "{'screen': 1}": true
+        "{'screen': 2}": true
+        "{'screen': 3}": true
+        "{'screen': 4}": true
+        "{'sofa': 1}": true
+        "{'sofa': 2}": true
+        "{'sofa': 3}": true
+        "{'sofa': 4}": true
+        "{'sofa': 56}": true
+        "{'sofa': 57}": true
+        "{'sofa': 58}": true
+        "{'sofa': 59}": true
+        "{'sofa': 5}": true
+        "{'sofa': 68}": true
+        "{'sofa': 69}": true
+        "{'sofa': 6}": true
+        "{'sofa': 70}": true
+        "{'sofa': 71}": true
+        "{'sofa': 72}": true
+        "{'sofa': 73}": true
+        "{'sofa': 74}": true
+        "{'sofa': 75}": true
+        "{'sofa': 76}": true
+        "{'sofa': 77}": true
+        "{'sofa': 78}": true
+        "{'sofa': 79}": true
+        "{'sofa': 7}": true
+        "{'sofa': 80}": true
+        "{'sofa': 81}": true
+        "{'sofa': 82}": true
+        "{'sofa': 83}": true
+        "{'sofa': 84}": true
+        "{'sofa': 85, 'table': 1}": true
+        "{'sofa': 85}": true
+        "{'sofa': 8}": true
+        "{'table': 1, 'sofa': 1}": true
+        "{'table': 1, 'sofa': 2}": true
+        "{'table': 1, 'sofa': 3}": true
+        "{'table': 10}": true
+        "{'table': 11}": true
+        "{'table': 12}": true
+        "{'table': 13}": true
+        "{'table': 14}": true
+        "{'table': 15}": true
+        "{'table': 16}": true
+        "{'table': 1}": true
+        "{'table': 2}": true
+        "{'table': 3}": true
+        "{'table': 4}": true
+        "{'table': 5}": true
+        "{'table': 6}": true
+        "{'table': 7}": true
+        "{'table': 8}": true
+        "{'table': 9}": true
+        "{'whiteboard': 1, 'cabinet': 1}": true
+        "{'whiteboard': 1}": true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /obj_boxes
       Value: true
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
@@ -483,82 +667,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz_default_plugins/MarkerArray
-      Enabled: true
-      Name: MarkerArray
-      Namespaces:
-        "{'cabinet': 1}": true
-        "{'chair': 1}": true
-        "{'chair': 2}": true
-        "{'chair': 3}": true
-        "{'chair': 4}": true
-        "{'chair': 5}": true
-        "{'chair': 6}": true
-        "{'chair': 7}": true
-        "{'chair': 8}": true
-        "{'pottedplant': 1}": true
-        "{'pottedplant': 2}": true
-        "{'pottedplant': 3}": true
-        "{'pottedplant': 4}": true
-        "{'sofa': 10}": true
-        "{'sofa': 1}": true
-        "{'sofa': 2}": true
-        "{'sofa': 3}": true
-        "{'sofa': 4}": true
-        "{'sofa': 5}": true
-        "{'sofa': 6}": true
-        "{'sofa': 7}": true
-        "{'sofa': 8}": true
-        "{'sofa': 9}": true
-        "{'table': 10}": true
-        "{'table': 1}": true
-        "{'table': 2}": true
-        "{'table': 5}": true
-        "{'table': 6}": true
-        "{'table': 7}": true
-        "{'table': 8}": true
-        "{'table': 9}": true
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /obj_boxes
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 0
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /explored_areas
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -567,13 +675,13 @@ Visualization Manager:
   Name: root
   Tools:
     - Class: rviz_default_plugins/MoveCamera
-    - Class: waypoint_rviz_plugin/WaypointTool
+    - Class: goalpoint_rviz_plugin/GoalpointTool
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: waypoint
+        Value: goalpoint
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
@@ -581,35 +689,35 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 14.532186508178711
+      Distance: 26.481332778930664
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.807796001434326
-        Y: -3.024909257888794
-        Z: -0.2373473048210144
+        X: 5.476159572601318
+        Y: 1.2582546472549438
+        Z: -3.6337099075317383
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9947962164878845
+      Pitch: 0.909796953201294
       Target Frame: map
       Value: Orbit (rviz)
-      Yaw: 3.3404242992401123
+      Yaw: 3.7304177284240723
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: true
-  Height: 818
-  Hide Left Dock: true
+    collapsed: false
+  Height: 1010
+  Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000018e000002dcfc0200000009fb0000001200530065006c0065006300740069006f006e000000003d000001c90000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003b000002dc000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001400430061006d0065007200610049006e00690074010000047400000016000000000000000000000001000001d4000002dcfc0200000007fb0000000a0049006d006100670065010000003b000000f00000002800fffffffb0000000a0049006d006100670065010000003d000001030000000000000000fb0000001a00530065006d0061006e0074006900630049006d00610067006500000000f4000000b30000002800fffffffb0000001600540065006c0065006f007000500061006e0065006c0100000131000001e60000004500fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000020b000001ca000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006500000000000000073d0000025300fffffffb0000000800540069006d00650100000000000004500000000000000000000004a8000002dc00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001560000039cfc0200000009fb0000001200530065006c0065006300740069006f006e000000003d000001b80000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b0000039c000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001400430061006d0065007200610049006e006900740100000474000000160000000000000000000000010000020a0000039cfc0200000007fb0000000a0049006d006100670065010000003b000000c50000002800fffffffb0000001a00530065006d0061006e0074006900630049006d0061006700650100000106000000c50000002800fffffffc000001d100000206000000d200fffffffa000000000100000002fb0000001600540065006c0065006f007000500061006e0065006c0100000000ffffffff000000be00fffffffb0000000a0049006d00610067006500000004a4000001020000000000000000fb0000000a0049006d006100670065010000003d000000de0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000018a0000018a000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006500000000000000073d0000025300fffffffb0000000800540069006d00650100000000000004500000000000000000000003c10000039c00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   SemanticImage:
@@ -622,6 +730,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1666
+  Width: 1837
   X: 54
   Y: 32

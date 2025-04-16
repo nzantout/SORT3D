@@ -4,12 +4,12 @@
   <arg name="ll_model" default="mistral"/>
   <arg name="planner_run_mode" default="use_tools"/>
   <arg name="object_query_type" default="llm"/>
-  <arg name="platform" default="wheelchair"/>
+  <arg name="platform" default="mecanum"/>
 
   <!-- Captioner -->
   <arg name="clip_model" default="clip"/>
-  <arg name="process_terrain_map_into_freespace" default="False"/>
-  <arg name="simulator" default="wheelchair_unity"/>
+  <arg name="process_terrain_map_into_freespace" default="True"/>
+  <arg name="simulator" default="mecanum_unity"/>
   <arg name="captioner_batch_size" default="16"/>
 
   <node pkg="language_planner" exec="language_planner_node" name="language_planner_node" output="screen"

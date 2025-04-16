@@ -55,7 +55,10 @@ class CaptioningNode(Node):
 
         # Ground Truth Map Initialization
 
-        self.sim_path = Path(__file__).resolve().parents[4] / "simulator" / simulator / "src" / "vehicle_simulator"
+        if simulator == 'mecanum_unity':
+            self.sim_path = Path(__file__).resolve().parents[4] / "simulator" / simulator / "src" / "base_autonomy" / "vehicle_simulator"
+        else:
+            self.sim_path = Path(__file__).resolve().parents[4] / "simulator" / simulator / "src" / "vehicle_simulator"
         self.scene_path = self.sim_path / 'mesh' / 'unity'
 
         self.device = "cuda:0"

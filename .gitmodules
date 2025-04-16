@@ -1,8 +1,8 @@
-[submodule "wheelchair_unity"]
-	path = simulator/wheelchair_unity
-	url = git@github.com:jizhang-cmu/cmu_vla_challenge_unity.git
-	branch = foxy-humble
 [submodule "semantic_mapper"]
 	path = semantic_mapper
 	url = git@github.com:gfchen01/semantic_mapping_with_360_camera_and_3d_lidar.git
 	branch = ros2
+[submodule "mecanum_unity"]
+	path = simulator/mecanum_unity
+	url = git@github.com:jizhang-cmu/autonomy_stack_mecanum_wheel_platform.git
+	branch = humble

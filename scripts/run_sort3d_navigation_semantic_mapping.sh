@@ -8,8 +8,8 @@ export ROS_DOMAIN_ID=1
 cd $SCRIPT_DIR
 cd ../ai_module
 source ./install/setup.bash
-ros2 run language_planner language_planner_node --platform wheelchair &
+ros2 run language_planner language_planner_node --platform mecanum &
 sleep 5
 
 cd ../semantic_mapper
-python -m semantic_mapping.mapping_ros2_node --config config/mapping_wheelchair.yaml --captioner_batch_size 16
+python -m semantic_mapping.mapping_ros2_node --config config/mapping_mecanum_real.yaml --captioner_batch_size 16
