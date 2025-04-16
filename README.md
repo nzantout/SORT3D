@@ -584,11 +584,11 @@ Enter a query to publish:
 
 Afterwards, drive the robot around to create a semantic map of the scene scene either using the virtual joystick or by clicking the "Waypoint with Heading" button and supplying waypoints:
 
-**PLACEHOLDER FOR VIDEO**
+https://github.com/user-attachments/assets/8d05dea9-5365-4ea1-9bf8-257a86b33791
 
-You may then type a natural language navigation statement, like "go near the red chair", and watch the system navigate:
+You may then type a natural language navigation statement, like "go to the potted plant furthest from you", and watch the system navigate:
 
-**PLACEHOLDER FOR VIDEO**
+https://github.com/user-attachments/assets/2c5efd27-dc2d-46fa-bec8-b674cfed157d
 
 ### ROS Bag
 
@@ -619,7 +619,7 @@ ros2 bag play [ros_bag].bag
 
 Follow the instructions on screen to pause/unpause the bag file. Run the bag for a while to generate a map, and you can see it being generated in the Rviz screen:
 
-**PLACEHOLDER FOR VIDEO**
+https://github.com/user-attachments/assets/1781e73e-6250-434f-8bfb-0919f33842c8
 
 To see the target bounding boxes for a query being generated, you may pause the ROS bag, then run the query publisher in a fourth terminal and provide a query:
 
