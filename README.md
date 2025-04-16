@@ -120,18 +120,19 @@ To run SORT3D-Bench, ensure the following three datasets are downloaded and unzi
 
 3. **ReferIt3D**: We provide the subsets of [ReferIt3D](https://referit3d.github.io/) used for the benchmark in `data/referit3d`.
 
-The final folder structure should look like so:
+Extract the IRef-VLA and the captions data into the same folder. The final folder structure should look like so:
 
 data/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;IRef-VLA/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance_crops<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_free_space_pc_result.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;captions/<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance_crops<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_free_space_pc_result.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;referit3d/<br>
 
@@ -167,7 +168,7 @@ The language planner additionally requires a WiFi connection on the robot to con
 
 ## SORT3D-Bench: Setup
 
-### 1) Conda Environment
+### 1.1) Conda Environment
 
 **First, make sure you are checked out into `humble-wheelchair`**:
 ```
@@ -182,6 +183,20 @@ conda env create -f environment.yml -n sort3d
 
 A `requirements.txt` is also provided mirroring the pip requirements in the `environment.yml`. The Docker image contains all the requirements for SORT3D-Bench preinstalled as well. You may follow sections 1-2 in [Setup: SORT3D-Nav](#setup-sort3d-nav) to install Docker and set the image up.
 
+### 1.2) Use Docker (Alternatively)
+
+Build the docker: 
+
+```bash
+docker build --network=host -t sort3d:latest -f docker/Dockerfile_benchmark .
+```
+
+Run the docker: 
+
+```bash
+docker run --gpus all -it --rm -v [CODE_PATH]:/home/sort3d/SORT3D sort3d:latest
+```
+
 ### 2) Dataset Setup
 
 Follow the instructions in [Dataset For SORT3D-Bench](#dataset-for-sort3d-bench) to ensure the dataset is correctly set up.
@@ -195,8 +210,8 @@ export MISTRAL_API_KEY="YOUR API KEY HERE"
 You may then run the benchmark on either Nr3D or Sr3D:
 ```bash
 cd ai_module/src/language_planner/language_planner
-conda activate sort3d
-python language_planner_benchmark.py --dataset [nr3d|sr3d]
+conda activate sort3d # you can skip this if using a docker
+python3 language_planner_benchmark.py --dataset [nr3d|sr3d] --log_dir [LOGFOLDER]
 ```
 Choose `nr3d` or `sr3d` as the `--dataset` argument to run the benchmark on our subsets of Nr3D and Sr3D respectively. The benchmark results are logged in `ai_module/src/language_planner/language_planner/logs/exp###` by default (where ### starts at 000 and is automatically incremented with each run). The script logs all correct answers and LLM reasoning in `correct.json`, and all incorrect answers in `incorrect.json`.
 

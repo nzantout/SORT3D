@@ -5,12 +5,8 @@ from pprint import pprint
 import warnings
 import traceback
 
-import langchain
+# import langchain
 # langchain.debug = True
-from langchain_openai import ChatOpenAI
-from langchain_mistralai import ChatMistralAI
-from langchain_ollama import ChatOllama
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
@@ -59,6 +55,7 @@ class LLMQueryHandler:
         # Initialize base LLM
         if model == LanguageModel.GPT4:
             try:
+                from langchain_openai import ChatOpenAI
                 self.llm = ChatOpenAI(
                     base_url="https://cmu.litellm.ai",
                     model_name="gpt-4",
@@ -68,6 +65,7 @@ class LLMQueryHandler:
                 print(f"Error initializing OpenAI model: {e}")
         elif model == LanguageModel.GEMINI:
             try:
+                from langchain_google_genai import ChatGoogleGenerativeAI
                 self.llm = ChatGoogleGenerativeAI(
                     model="gemini-1.5-flash",
                     **kwargs
@@ -75,6 +73,7 @@ class LLMQueryHandler:
             except Exception as e:
                 print(f"Error initializing Google Generative AI model: {e}")
         elif model == LanguageModel.MISTRAL:
+            from langchain_mistralai import ChatMistralAI
             self.llm = ChatMistralAI(
                 model="mistral-large-latest",
                 temperature=0.0,
@@ -85,6 +84,7 @@ class LLMQueryHandler:
         elif model == LanguageModel.LLAMA or model == LanguageModel.R1_QWEN2:
             # install ollama here: https://github.com/ollama/ollama
             # Run in a separate terminal as `ollama run llama3.1:8b` or `ollama run deepseek-r1:7b`
+            from langchain_ollama import ChatOllama
             self.llm = ChatOllama(
                 model=model.value,
                 temperature=0.0,
@@ -93,6 +93,7 @@ class LLMQueryHandler:
             )
         elif model == LanguageModel.GPT4O:
             #set "OPENAI_API_KEY" env variable
+            from langchain_openai import ChatOpenAI
             self.llm = ChatOpenAI(
                 api_key=os.environ.get("OPENAI_API_KEY"),
                 model_name="gpt-4o"
