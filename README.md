@@ -13,7 +13,7 @@
 </div>
 &nbsp;
 <div align="center" margin-bottom="1em">
-    <a href="" target="_blank">
+    <a href="https://arxiv.org/abs/2504.18684" target="_blank">
     <img src="https://img.shields.io/badge/Paper-arXiv-deepgreen" alt="Paper arXiv"></a>
     <a href="" target="_blank">
     <img src="https://img.shields.io/badge/Video-YouTube-9966ff" alt="Video"></a>
@@ -634,4 +634,16 @@ Please report any issues you face in the issue tracker, and we'll add them here.
 
 ## Citation
 
-Pending.
+If you use our work, please cite:
+
+```
+@misc{zhang2025irefvlabenchmarkinteractivereferential,
+      title={IRef-VLA: A Benchmark for Interactive Referential Grounding with Imperfect Language in 3D Scenes}, 
+      author={Haochen Zhang and Nader Zantout and Pujith Kachana and Ji Zhang and Wenshan Wang},
+      year={2025},
+      eprint={2503.17406},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2503.17406}, 
+}
+```

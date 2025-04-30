@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export MISTRAL_API_KEY=y6GvfCA8Dtfmoxmqjo7rtSrXIIm46In7
+export MISTRAL_API_KEY="YOUR API KEY HERE"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source /opt/ros/humble/setup.bash
 
