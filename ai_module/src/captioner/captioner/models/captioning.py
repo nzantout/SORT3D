@@ -138,7 +138,7 @@ class QwenHFBackend(CaptioningModel):
 
         self.stopping_criteria = StoppingCriteriaList([StopStringCriteria(self.processor.tokenizer, '.')])
 
-        self.prompt = "Describe the {obj} in this image, using properties like color, material, shape, affordances, and other meaningful attributes. Provide the response in this format: “The <object name> is <color>, <material>, <shape>."
+        self.prompt = "Describe the {obj} in this image, using properties like color, material, shape, affordances, and other meaningful attributes. Provide the response in this format: “The <object name> is <color>, <material>, <shape>. If there are things on/in the object, describe them."
 
     def generate_captions(self, images, names: list[str]):
 

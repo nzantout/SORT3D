@@ -15,7 +15,7 @@
 <div align="center" margin-bottom="1em">
     <a href="https://arxiv.org/abs/2504.18684" target="_blank">
     <img src="https://img.shields.io/badge/Paper-arXiv-deepgreen" alt="Paper arXiv"></a>
-    <a href="" target="_blank">
+    <a href="https://youtu.be/Jhd_ThwBSGo" target="_blank">
     <img src="https://img.shields.io/badge/Video-YouTube-9966ff" alt="Video"></a>
 </div>
 &nbsp;
@@ -614,7 +614,7 @@ rosbag play [ros_bag].bag
 
 **If you are using ROS 2:**
 ```bash
-ros2 bag play [ros_bag].bag
+ros2 bag play [ros_bag].db3
 ```
 
 Follow the instructions on screen to pause/unpause the bag file. Run the bag for a while to generate a map, and you can see it being generated in the Rviz screen:

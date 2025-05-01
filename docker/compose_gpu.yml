@@ -23,6 +23,7 @@ services:
       - "DISPLAY"
       - "QT_X11_NO_MITSHM=1"
       - XAUTHORITY=/tmp/.docker.xauth
+      - HOST_USER=${USER}
     # This mounts the host directories into the container 
     volumes:
       # This mounts the X11 socket into the container so that GUIs can be displayed
@@ -31,4 +32,3 @@ services:
       - /dev/input:/dev/input
       - /dev/bus/usb:/dev/bus/usb:rw
       - /home/$USER:/home/$USER:rw
-      # - /dev/shm:/dev/shm
