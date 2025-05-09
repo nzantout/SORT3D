@@ -28,7 +28,9 @@ We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigati
 
 &nbsp;
 
-https://github.com/user-attachments/assets/df61c12d-6815-4c06-910e-7b55e0b999c6
+https://github.com/user-attachments/assets/20865dc0-1ffc-4d72-9975-508687dbbe76
+
+
 
 This repository is set up to run both grounding evaluation on the [ReferIt3D](https://referit3d.github.io) and [VLA-3D](https://github.com/HaochenZ11/VLA-3D) benchmarks and online navigation, on both real robots and provided simulated environments. We also provide a [dataset](#dataset) of Scannet object crops and captions generated using our pipeline.
 
