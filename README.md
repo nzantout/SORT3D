@@ -639,13 +639,13 @@ Please report any issues you face in the issue tracker, and we'll add them here.
 If you use our work, please cite:
 
 ```
-@misc{zhang2025irefvlabenchmarkinteractivereferential,
-      title={IRef-VLA: A Benchmark for Interactive Referential Grounding with Imperfect Language in 3D Scenes}, 
-      author={Haochen Zhang and Nader Zantout and Pujith Kachana and Ji Zhang and Wenshan Wang},
+@misc{zantout2025sort3dspatialobjectcentricreasoning,
+      title={SORT3D: Spatial Object-centric Reasoning Toolbox for Zero-Shot 3D Grounding Using Large Language Models}, 
+      author={Nader Zantout and Haochen Zhang and Pujith Kachana and Jinkai Qiu and Ji Zhang and Wenshan Wang},
       year={2025},
-      eprint={2503.17406},
+      eprint={2504.18684},
       archivePrefix={arXiv},
       primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2503.17406}, 
+      url={https://arxiv.org/abs/2504.18684}, 
 }
 ```
