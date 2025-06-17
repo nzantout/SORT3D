@@ -13,24 +13,30 @@
 </div>
 &nbsp;
 <div align="center" margin-bottom="1em">
-    <a href="" target="_blank">
+    <a href="https://arxiv.org/abs/2504.18684" target="_blank">
     <img src="https://img.shields.io/badge/Paper-arXiv-deepgreen" alt="Paper arXiv"></a>
-    <a href="" target="_blank">
+    <a href="https://youtu.be/Jhd_ThwBSGo" target="_blank">
     <img src="https://img.shields.io/badge/Video-YouTube-9966ff" alt="Video"></a>
 </div>
+&nbsp;
+
+We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigation system employing a spatial reasoning toolbox and state-of-the-art 2D VLMs for perception. The toolbox is capable of interpreting both direct and indirect statements about spatial relations, using an LLM for high-level reasoning and guiding the autonomous robot to navigate through the environment. It has demonstrated the best zero-shot performance on spatial reasoning benchmarks. To the best of our knowledge, this is the first implementation of a general spatial relation toolbox for autonomous vision-language navigation that is fully integrated into real-robot systems.
 
 &nbsp;
 
-We propose **SORT3D**, an LLM-based object-centric grounding and indoor navigation system employing a spatial reasoning toolbox and state of the art 2D VLMs for perception. To the best of our knowledge, this is the first implementation of a general spatial relation toolbox for autonomous vision-language navigation that is fully integrated into real-robot systems. The toolbox is capable of interpreting both direct and indirect statements about spatial relations, using an LLM for high-level reasoning and guiding the autonomous robot to navigate through the environment.
+<div align="center"><img src="media/diagram.png" alt="SORT3D Diagram" width="99%"></div>
 
-<div style="text-align: center;"><img src="media/diagram.png" alt="SORT3D Diagram" width="99%"></div>
+&nbsp;
 
-https://github.com/user-attachments/assets/df61c12d-6815-4c06-910e-7b55e0b999c6
+https://github.com/user-attachments/assets/20865dc0-1ffc-4d72-9975-508687dbbe76
+
+
 
 This repository is set up to run both grounding evaluation on the [ReferIt3D](https://referit3d.github.io) and [VLA-3D](https://github.com/HaochenZ11/VLA-3D) benchmarks and online navigation, on both real robots and provided simulated environments. We also provide a [dataset](#dataset) of Scannet object crops and captions generated using our pipeline.
 
 ## Updates
 
+- [2025-06] SORT3D is accepted to IROS 2025!
 - [2025-03] We release SORT3D for offline grounding and online object-centric navigation. 
 
 -----
@@ -55,6 +61,7 @@ This repository is set up to run both grounding evaluation on the [ReferIt3D](ht
   - [2) Pulling and Preparing Docker Image](#2-pulling-and-preparing-docker-image)
   - [3a) Building ROS Humble System with Wheelchair Simulator](#3a-building-ros-humble-system-with-wheelchair-simulator)
   - [3b) Building ROS Noetic System with Wheelchair Simulator (Ubuntu 22.04)](#3b-building-ros-noetic-system-with-wheelchair-simulator-ubuntu-2204)
+  - [3c) Building ROS Humble System with Mecanum Simulator](#3c-building-ros-humble-system-with-mecanum-simulator)
   - [(Optional) Installing ROS Humble System Dependencies Without Docker](#optional-installing-ros-humble-system-dependencies-without-docker)
   - [(Optional) Installing ROS Noetic System Dependencies Without Docker](#optional-installing-ros-noetic-system-dependencies-without-docker)
 - [SORT3D-Nav: Usage](#sort3d-nav-usage)
@@ -71,16 +78,21 @@ SORT3D has two major versions:
 1. **SORT3D-Bench**: The version of SORT3D used to run the [ReferIt3D](https://referit3d.github.io) and the [IRef-VLA](https://github.com/HaochenZ11/IRef-VLA) benchmarks.
 2. **SORT3D-Nav**: The version of SORT3D used to run navigation on our robot platforms, built on top of our base autonomy stack. SORT3D is deployed on two research platforms:
     1. [Our wheelchair-base robot (**wheelchair**)](https://github.com/jizhang-cmu/cmu_vla_challenge_unity), for which we have both **ROS Noetic** and **ROS Humble** versions.
-    2. [Our mecanum-wheeled robot (**mecanum**)](https://github.com/jizhang-cmu/autonomy_stack_mecanum_wheel_platform), for which we have a **ROS Humble** version.
-
+    2. [Our mecanum-wheeled robot (**mecanum**)](https://github.com/jizhang-cmu/autonomy_stack_mecanum_wheel_platform), for which we have a **ROS Humble** version.    
+&nbsp;
+<p align="center">
+  <img src="media/mecanum_wheel.jpg" height="300" />
+  <img src="media/wheelchair.jpg" height="300" />
+</p>
+&nbsp;
 This repository contains a separate branch for each platform and each ROS version SORT3D-Nav is deployed on. The SORT3D-Bench script is included in the `humble-wheelchair` branch. Each version of SORT3D-Nav is accompanied with a unity-based simulator and a ROS bag recording of the office areas the live demonstrations were recorded in. Additionally, we provide launch scripts of SORT3D-Nav using both ground truth semantic segmentations and our live semantic mapping module. The table below summarizes the currently available systems and their respective branches:
 
 | Platform | ROS Version | Branch | Simulation Available | Live Demo Available (Using ROS Bag) | Ground Truth Semantics Available | Semantic Mapping Module Available |
 |---|---|---|---|---|---|---|
 | Benchmark  | - | `humble-wheelchair` | ☑️ | - | ☑️ | - |
-| Wheelchair | Noetic | `humble-wheelchair` | ☑️ | Soon! | ☑️ | Soon! |
-| Wheelchair | Humble | `noetic-wheelchair` | ☑️ | Soon! | ☑️ | Soon! |
-| Mecanum | Humble | `humble-mecanum` | Soon! | Soon! | Soon! | Soon! |
+| Wheelchair | Noetic | `humble-wheelchair` | ☑️ | ☑️ | ☑️ | ☑️ |
+| Wheelchair | Humble | `noetic-wheelchair` | ☑️ | ☑️ | ☑️ | ☑️ |
+| Mecanum | Humble | `humble-mecanum` | ☑️ | ☑️ | ☑️ | ☑️ |
 
 ## Data
 
@@ -111,18 +123,19 @@ To run SORT3D-Bench, ensure the following three datasets are downloaded and unzi
 
 3. **ReferIt3D**: We provide the subsets of [ReferIt3D](https://referit3d.github.io/) used for the benchmark in `data/referit3d`.
 
-The final folder structure should look like so:
+Extract the IRef-VLA and the captions data into the same folder. The final folder structure should look like so:
 
 data/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;IRef-VLA/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance_crops<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_free_space_pc_result.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;captions/<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scannet/<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_01<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;instance_crops<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_free_space_pc_result.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scene0000_00_...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;referit3d/<br>
 
@@ -147,15 +160,18 @@ while making sure to pick the correct platform. Each ROS bag will be downloaded 
 
 ### Hardware Requirements
 
-SORT3D-Nav has been deployed on an NVidia RTX 4090 with 24GB of VRAM to run the live captioning model on the wheelchair. The system requires around 16GB of VRAM to run the semantic mapping module along with live captioning. The system uses around 12GB of VRAM to run using ground truth semantics with live captioning. We will add a breakdown of memory usage and options to reduce usage for lower end devices soon!
+SORT3D-Nav has been deployed on an Nvidia RTX 4090 with 24GB of VRAM to run the live captioning model on the wheelchair, and on an Nvidia RTX 4090 with 16GB of VRAM to run the live captioning model on the mecanum-wheeled robot. The system requires a minimum of:
 
-### Operating System
+- 10GB of VRAM to run the semantic mapping module along with live captioning.
+- 7GB of VRAM to run using ground truth semantics with live captioning.
 
-This system has been tested in Ubuntu 20.04, 22.04, and 24.04, running in the Ubuntu 22.04 Docker image we provide. 
+If you have more VRAM, you may increase the `captioner_batch_size` in the run scripts to get faster captioning throughput (and vice versa). 
+
+The language planner additionally requires a WiFi connection on the robot to connect to the Mistral servers. This system has been tested in Ubuntu 20.04, 22.04, and 24.04, running in the Ubuntu 22.04 Docker image we provide. 
 
 ## SORT3D-Bench: Setup
 
-### 1) Conda Environment
+### 1.1) Conda Environment
 
 **First, make sure you are checked out into `humble-wheelchair`**:
 ```
@@ -170,6 +186,20 @@ conda env create -f environment.yml -n sort3d
 
 A `requirements.txt` is also provided mirroring the pip requirements in the `environment.yml`. The Docker image contains all the requirements for SORT3D-Bench preinstalled as well. You may follow sections 1-2 in [Setup: SORT3D-Nav](#setup-sort3d-nav) to install Docker and set the image up.
 
+### 1.2) Use Docker (Alternatively)
+
+Build the docker: 
+
+```bash
+docker build --network=host -t sort3d:latest -f docker/Dockerfile_benchmark .
+```
+
+Run the docker: 
+
+```bash
+docker run --gpus all -it --rm -v [CODE_PATH]:/home/sort3d/SORT3D sort3d:latest
+```
+
 ### 2) Dataset Setup
 
 Follow the instructions in [Dataset For SORT3D-Bench](#dataset-for-sort3d-bench) to ensure the dataset is correctly set up.
@@ -183,8 +213,8 @@ export MISTRAL_API_KEY="YOUR API KEY HERE"
 You may then run the benchmark on either Nr3D or Sr3D:
 ```bash
 cd ai_module/src/language_planner/language_planner
-conda activate sort3d
-python language_planner_benchmark.py --dataset [nr3d|sr3d]
+conda activate sort3d # you can skip this if using a docker
+python3 language_planner_benchmark.py --dataset [nr3d|sr3d] --log_dir [LOGFOLDER]
 ```
 Choose `nr3d` or `sr3d` as the `--dataset` argument to run the benchmark on our subsets of Nr3D and Sr3D respectively. The benchmark results are logged in `ai_module/src/language_planner/language_planner/logs/exp###` by default (where ### starts at 000 and is automatically incremented with each run). The script logs all correct answers and LLM reasoning in `correct.json`, and all incorrect answers in `incorrect.json`.
 
@@ -315,11 +345,20 @@ mesh/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.jpg<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render.jpg<br>
 
-Finally, build SORT3D-Nav in `ai_module`:
+Build SORT3D-Nav in `ai_module`:
 
 ```bash
 cd ../../ai_module
 colcon build --symlink-install
+```
+
+Afterwards, install the following dependencies in the [semantic mapping module](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar). If you are using our provided Docker image, all the other dependencies in the repositories are preinstalled, and you only need to install these. Otherwise, if you want to use the module outside the image, follow the instructions in the [repo README](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar?tab=readme-ov-file#repository-setup).
+
+```bash
+cd ../semantic_mapper/external
+pip install Grounded-SAM-2/grounding_dino
+pip install Grounded-SAM-2
+pip install byte_track cython_bbox
 ```
 
 ### 3b) Building ROS Noetic System with Wheelchair Simulator (Ubuntu 22.04)
@@ -357,10 +396,70 @@ mesh/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.jpg<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render.jpg<br>
 
-Finally, build SORT3D-Nav in `ai_module`:
+Build SORT3D-Nav in `ai_module`:
 ```bash
 cd ../../ai_module
 catkin_make
+```
+
+Afterwards, install the following dependencies in the [semantic mapping module](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar/tree/ros1?tab=readme-ov-file). If you are using our provided Docker image, all the other dependencies in the repositories are preinstalled, and you only need to install these. Otherwise, if you want to use the module outside the image, follow the instructions in the [repo README](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar/tree/ros1?tab=readme-ov-file#repository-setup).
+
+```bash
+cd ../semantic_mapper/external
+pip install Grounded-SAM-2/grounding_dino
+pip install Grounded-SAM-2
+pip install byte_track cython_bbox
+```
+
+### 3c) Building ROS Humble System with Mecanum Simulator
+
+**Make sure you are checked out into `humble-mecanum`**:
+```
+git checkout humble-mecanum
+```
+
+The instructions for building the base system are excerpted from [its original repo](https://github.com/jizhang-cmu/autonomy_stack_mecanum_wheel_platform/tree/humble). Start by making sure ROS Humble is sourced:
+
+```bash
+source /opt/ros/humble/setup.bash
+```
+
+Then build the base autonomy system in `simulator/mecanum_unity`, skipping the SLAM module and Mid-360 lidar driver (the two packages are not needed for simulation):
+```bash
+cd simulator/mecanum_unity
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-skip arise_slam_mid360 arise_slam_mid360_msgs livox_ros_driver2
+```
+Download a [Unity environment model for the Mecanum wheel platform](https://drive.google.com/drive/folders/1G1JYkccvoSlxyySuTlPfvmrWoJUO8oSs?usp=sharing) and unzip the files to the 'src/base_autonomy/vehicle_simulator/mesh/unity' folder. The environment model files should look like below.
+
+mesh/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unity/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;environment/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model_Data/ (multiple files in the folder)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Model.x86_64<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UnityPlayer.so<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AssetList.csv (generated at runtime)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dimensions.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Categories.csv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;object_list.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;traversable_area.ply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;map.jpg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render.jpg<br>
+
+Build SORT3D-Nav in `ai_module`:
+
+```bash
+cd ../../ai_module
+colcon build --symlink-install
+```
+
+Afterwards, install the following dependencies in the [semantic mapping module](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar). If you are using our provided Docker image, all the other dependencies in the repositories are preinstalled, and you only need to install these. Otherwise, if you want to use the module outside the image, follow the instructions in the [repo README](https://github.com/gfchen01/semantic_mapping_with_360_camera_and_3d_lidar?tab=readme-ov-file#repository-setup).
+
+```bash
+cd ../semantic_mapper/external
+pip install Grounded-SAM-2/grounding_dino
+pip install Grounded-SAM-2
+pip install byte_track cython_bbox
 ```
 
 ### (Optional) Installing ROS Humble System Dependencies without Docker
@@ -379,7 +478,7 @@ This section contains instructions to install ROS Humble and SORT3D-Nav system d
     ```bash
     pip install -r requirements.txt
     ```
-5. Follow [Section 3a](#3a-building-ros-humble-system-with-wheelchair-simulator) to set up the system.
+5. Follow [Section 3a](#3a-building-ros-humble-system-with-wheelchair-simulator) or [Section 3c](#3c-building-ros-humble-system-with-mecanum-simulator) to set up the system.
 
 
 ### (Optional) Installing ROS Noetic System Dependencies without Docker
@@ -404,9 +503,9 @@ This section contains instructions to build ROS Noetic from source and SORT3D-Na
 
 ### Simulation with Ground Truth Semantics
 
-**The instructions for running the simulated system are the same regardless of which branch you are**
+**The instructions for running the simulated system using ground truth semantics are the same regardless of which branch you are using. Check out the branch you wish to run.**
 
-SORT3D uses [Mistral Large 2](https://mistral.ai/) by default. Create a free research API key, then replace the placeholder in [`scripts/run_full_system_gt_semantics.sh`](scripts/run_sort3d_navigation_gt_semantics.sh) with your API key:
+SORT3D uses [Mistral Large 2](https://mistral.ai/) by default. Create a free research API key, then replace the placeholder in [`scripts/run_full_system_gt_semantics.sh`](scripts/run_full_system_gt_semantics.sh) with your API key:
 ```
 export MISTRAL_API_KEY="YOUR API KEY HERE"
 ```
@@ -429,9 +528,9 @@ In your terminal, the captioning and language planner nodes will be logging to s
 
 <img src="media/captioning_terminal.png" alt="" class="">
 
-In another terminal, make sure the `ai_module` workspace is sourced, then run the query publisher node to take in from standard input:
+In another terminal, run the query publisher node to take in from standard input:
 
-```
+```bash
 scripts/run_query_publisher.sh
 ```
 
@@ -448,12 +547,88 @@ https://github.com/user-attachments/assets/a4b88e80-4ae6-4ce1-9215-1cd449275b7f
 
 ### Simulation with Semantic Mapping Module
 
-Coming soon!
+**The instructions for running the simulated system with the semantic mapping module are the same regardless of which branch you are using. Check out the branch you wish to run.**
 
+Create a free research API key for [Mistral Large 2](https://mistral.ai/), then replace the placeholder in [`scripts/run_full_system_semantic_mapping.sh`](scripts/run_full_system_semantic_mapping.sh) with your API key:
+```bash
+export MISTRAL_API_KEY="YOUR API KEY HERE"
+```
+You may do the same with [`scripts/run_sort3d_navigation_semantic_mapping.sh`](scripts/run_sort3d_navigation_semantic_mapping.sh) if you want to run SORT3D separately from the base autonomy system. Make sure all the scripts are executable:
+
+```bash
+chmod -R +x scripts 
+```
+
+Then, in one terminal, run
+```bash
+scripts/run_full_system_semantic_mapping.sh
+```
+
+Wait until the system starts up. You should see the RViz and Unity windows open:
+
+<img src="media/rviz_semantic_mapping.png" alt="RViz window" width="62%"> <img src="media/unity_window_semantic_mapping.png" alt="Unity window" width="37%">
+
+In your terminal, the semantic mapping and language planner nodes will be logging to standard output:
+
+<img src="media/semantic_mapping_terminal.png" alt="">
+
+In another terminal, run the query publisher node to take in from standard input:
+
+```bash
+scripts/run_query_publisher.sh
+```
+
+The output of the query publisher node should look like so:
+
+```
+[INFO] [1743652602.832061201] [language_publisher]: LanguagePublisher node has been started. Type your query below.
+Enter a query to publish: 
+```
+
+Afterwards, drive the robot around to create a semantic map of the scene scene either using the virtual joystick or by clicking the "Waypoint with Heading" button and supplying waypoints:
+
+https://github.com/user-attachments/assets/8d05dea9-5365-4ea1-9bf8-257a86b33791
+
+You may then type a natural language navigation statement, like "go to the potted plant furthest from you", and watch the system navigate:
+
+https://github.com/user-attachments/assets/2c5efd27-dc2d-46fa-bec8-b674cfed157d
 
 ### ROS Bag
 
-Coming soon!
+We provide ROS bags of various indoor environments to demonstrate SORT3D-Nav in real environments. [Follow the instructions above to download](#ros-bag-files-for-sort3d-nav) a ROS bag for either the mecanum-wheeled robot or the wheelchair-base robot. Again, make sure you have created a free research API key for [Mistral Large 2](https://mistral.ai/), then replace the placeholder in [`scripts/run_sort3d_navigation_semantic_mapping.sh`](scripts/run_sort3d_navigation_semantic_mapping.sh) with your API key:
+```
+export MISTRAL_API_KEY="YOUR API KEY HERE"
+```
+
+Start by running the script for SORT3D-Nav using semantic mapping (script is the same regardless of which branch you are using):
+```bash
+scripts/run_sort3d_navigation_semantic_mapping.sh
+```
+
+Run the Rviz viewer in a second terminal:
+```bash
+scripts/run_rviz_viewer.sh
+```
+
+In a third terminal, play the ROS bag you downloaded. **If you are using ROS 1:**
+```bash
+rosbag play [ros_bag].bag
+```
+
+**If you are using ROS 2:**
+```bash
+ros2 bag play [ros_bag].db3
+```
+
+Follow the instructions on screen to pause/unpause the bag file. Run the bag for a while to generate a map, and you can see it being generated in the Rviz screen:
+
+https://github.com/user-attachments/assets/1781e73e-6250-434f-8bfb-0919f33842c8
+
+To see the target bounding boxes for a query being generated, you may pause the ROS bag, then run the query publisher in a fourth terminal and provide a query:
+
+```bash
+scripts/run_query_publisher.sh
+```
 
 
 ## Troubleshooting
@@ -462,4 +637,16 @@ Please report any issues you face in the issue tracker, and we'll add them here.
 
 ## Citation
 
-Pending.
+If you use our work, please cite:
+
+```
+@misc{zantout2025sort3dspatialobjectcentricreasoning,
+      title={SORT3D: Spatial Object-centric Reasoning Toolbox for Zero-Shot 3D Grounding Using Large Language Models}, 
+      author={Nader Zantout and Haochen Zhang and Pujith Kachana and Jinkai Qiu and Ji Zhang and Wenshan Wang},
+      year={2025},
+      eprint={2504.18684},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2504.18684}, 
+}
+```
