@@ -36,6 +36,7 @@ This repository is set up to run both grounding evaluation on the [ReferIt3D](ht
 
 ## Updates
 
+- [2025-06] SORT3D is accepted to IROS 2025!
 - [2025-03] We release SORT3D for offline grounding and online object-centric navigation. 
 
 -----
