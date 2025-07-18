@@ -5,11 +5,11 @@ from tqdm import tqdm
 
 # AirLab server config
 BUCKET = "sort3d"
-ENDPOINT = "airlab-share-01.andrew.cmu.edu:9000"
+ENDPOINT = "airlab-share-02.andrew.cmu.edu:9000"
 
 # Public keys (for downloading)
-ACCESS_KEY = "lNJg8FovonIvAuomH7xH"
-SECRET_KEY = "JOdaE6OfENXRtMs8U4NdRo2vjrNsgJ0eV1D2zF4E"
+ACCESS_KEY = "uh4lybOgHsZ4eKlrcfp6"
+SECRET_KEY = "dZwFFsLl2fTisultzV7PboM9SzZ0JL09r3vzEnKu"
 
 
 def get_from_server(client: Minio, bucket_name, source_name, target_name):
