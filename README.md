@@ -100,10 +100,10 @@ This repository contains a separate branch for each platform and each ROS versio
 
 To run SORT3D-Bench, ensure the following three datasets are downloaded and unzipped:
 
-1. **Object Captions Dataset**: For our benchmark, we have pregenerated 2D object crops and captions using our captioning system and [Qwen2.5-VL](#https://github.com/QwenLM/Qwen2.5-VL). To download, first install minio and tqdm:
+1. **Object Captions Dataset**: For our benchmark, we have pregenerated 2D object crops and captions using our captioning system and [Qwen2.5-VL](#https://github.com/QwenLM/Qwen2.5-VL). To download, first install boto3 and tqdm:
 
     ```bash
-    pip install minio tqdm
+    pip install boto3 tqdm
     ```
 
     Then run
@@ -142,10 +142,10 @@ data/<br>
 
 ### ROS Bag Files for SORT3D-Nav
 
-We provide ROS bag files for both the wheelchair and mecanum platforms. To download, install minio and tqdm:
+We provide ROS bag files for both the wheelchair and mecanum platforms. To download, install boto3 and tqdm:
 
 ```bash
-pip install minio tqdm
+pip install boto3 tqdm
 ```
 
 Then run

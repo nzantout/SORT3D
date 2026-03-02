@@ -1,47 +1,62 @@
 import os
 import argparse
-from minio import Minio
 from tqdm import tqdm
+import boto3
+from botocore import UNSIGNED
+from botocore.client import Config
 
 # AirLab server config
 BUCKET = "sort3d"
-ENDPOINT = "airlab-share-02.andrew.cmu.edu:9000"
+ENDPOINT = "https://airlab-cloud.andrew.cmu.edu:8080/swift/v1/AUTH_ac8533a83cff4d48bc8c608ad222d330"
 
-# Public keys (for downloading)
-ACCESS_KEY = "uh4lybOgHsZ4eKlrcfp6"
-SECRET_KEY = "dZwFFsLl2fTisultzV7PboM9SzZ0JL09r3vzEnKu"
-
-
-def get_from_server(client: Minio, bucket_name, source_name, target_name):
+def get_from_server(client, bucket_name, source_name, target_name):
     """
-    Downloads a specific file from server using Minio
+    Downloads a specific file from server using boto3
 
     Args: 
-    client: Minio client object with set up with keys
+    client: boto3 S3 client object
     bucket_name: str name of data bucket
     source_name: name of file on server
     target_name: name of file locally
 
-    Returns: True
+    Returns: True if successful, False otherwise
     """
     print(f"Downloading {source_name} from {bucket_name}...")
-    client.fget_object(bucket_name, source_name, target_name)
-    print(f"Successfully downloaded {source_name} to {target_name}!")
-
-    return True
+    try:
+        resp = client.get_object(Bucket=bucket_name, Key=source_name)
+        
+        # Create target directory if it does not exist
+        target_dir = os.path.dirname(target_name)
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        
+        # Get file size for progress bar
+        file_size = resp['ContentLength']
+        
+        with open(target_name, 'wb') as file_data:
+            with tqdm(total=file_size, unit='B', unit_scale=True, desc=source_name) as pbar:
+                for chunk in resp["Body"].iter_chunks(chunk_size=1024 * 1024):
+                    if chunk:
+                        pbar.update(len(chunk))
+                        file_data.write(chunk)
+        
+        print(f"Successfully downloaded {source_name} to {target_name}!")
+        return True
+    except Exception as e:
+        print(f"Error: Failed to download {source_name} due to {e}.")
+        return False
 
 
 def download(args):
     """
     Configures download client and loops through files
     """
-    client = Minio(ENDPOINT,
-                access_key=ACCESS_KEY,
-                secret_key=SECRET_KEY,
-                secure=True)
+    client = boto3.client("s3", 
+                         endpoint_url=ENDPOINT, 
+                         config=Config(signature_version=UNSIGNED))
     
     if not os.path.exists(args.download_path):
-        os.mkdir(args.download_path)
+        os.makedirs(args.download_path)
 
     file = f'{args.platform}_sqh.zip'
     file_path = f'bagfiles/{file}'
